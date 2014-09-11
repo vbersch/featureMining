@@ -1,34 +1,40 @@
 package featureMining;
 
+import gate.Corpus;
+import gate.Document;
+import gate.Factory;
+import gate.Gate;
+import gate.util.GateException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+//main class
 public class Main {
 	
-	public static HashMap<String,String> features;
-	private static Pattern htmltagPattern;
-	private static Pattern linkPattern;
+	private static Pattern htmltagPattern = Pattern.compile("<a\\b[^>]*href=\"[^>]*>(.*?)</a>");
+	private static Pattern linkPattern = Pattern.compile("href=\"[^>]*\">");
+	private static Corpus corpus;
+	private static String hostName;
+	private static int maxThreads = 4;
+	private static Queue<String> links;
 	
 	public static void main(String[] args) {
 		
 		//init
-		features = new HashMap<String,String>();
 		String baseUrl = "";
-		htmltagPattern = Pattern.compile("<a\\b[^>]*href=\"[^>]*>(.*?)</a>");
-	    linkPattern = Pattern.compile("href=\"[^>]*\">");
-//		try {
-//			Gate.init();
-//		} catch (GateException e) {
-//			e.printStackTrace();
-//		}
+		links = new LinkedList<String>();
 		
 		if(args.length < 1){
 			System.out.println("Pass a url as argument!");
@@ -36,20 +42,33 @@ public class Main {
 		}else{
 			baseUrl = args[0];
 		}
-		System.out.println("Getting the html sites from " + baseUrl);
-		ArrayList<String> docs = getContentFromBaseUrl(baseUrl);  
+		
+	    Pattern hostPattern = Pattern.compile("//.*?/");
+		Matcher hostMatcher = hostPattern.matcher(baseUrl);
+		hostMatcher.find();
+		hostName = hostMatcher.group().replaceAll("/", "");
+		
+		try {
+			Gate.init();
+			corpus = Factory.newCorpus(hostName);
+		} catch (GateException e1) {
+			e1.printStackTrace();
+		}
+		getContentFromBaseUrl(baseUrl);  
 	}
 	
 	
-	private static ArrayList<String> getContentFromBaseUrl(String baseUrl){
-		String baseContent = getHTML(baseUrl);
-		ArrayList<String> links = new ArrayList<String>();
-		//System.out.println(html);
+	private static void getContentFromBaseUrl(String baseUrl){
+		String baseContent 	= getHTML(baseUrl); //get html for the initial site
+
+		System.out.println("hostName: " + hostName);
 		
 		if(baseContent == ""){
 			System.out.println("Cannot read base Url");
 			System.exit(0);
 		}
+		
+		links.offer(baseUrl);
 		
 		Matcher tagmatch = htmltagPattern.matcher(baseContent);
 		while (tagmatch.find()) {
@@ -57,13 +76,53 @@ public class Main {
 			matcher.find();
 			String link = matcher.group().replaceFirst("href=\"", "")
 					.replaceFirst("\">", "")
-					.replaceFirst("\"[\\s]?target=\"[a-zA-Z_0-9]*", "");
+					.replaceFirst("\"[\\s]?target=\"[a-zA-Z_0-9]*", "")
+					.replaceFirst("\".*", "");
 			if (valid(link)) {
-				links.add(makeAbsolute(baseUrl, link));
+				if(!link.startsWith("http")){
+					link = baseUrl + link;
+					if(link.contains("#")){
+						String splitString[] = link.split("#");
+						link = splitString[0];
+					}
+				}else if(!link.matches(".*" + hostName + ".*")){
+					link = "";
+				}
+				if(link != "" && !links.contains(link)){
+					links.offer(link);
+				}
 			}
 		}
 		
-		return null;
+		System.out.println("\nFound " + links.size() + " Links on " + baseUrl );
+		
+		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+		CloseableHttpClient httpClient = HttpClients.custom()
+		        .setConnectionManager(cm)
+		        .build();
+		
+		DocWorker[] threads = new DocWorker[maxThreads];
+		
+		//init threads
+		for (int i = 0; i < threads.length; i++) {
+		    threads[i] = new DocWorker(httpClient, i+1);
+		}
+		
+		// start the threads
+		for (int j = 0; j < threads.length; j++) {
+		    threads[j].start();
+		}
+
+		// join the threads
+		for (int j = 0; j < threads.length; j++) {
+		    try {
+				threads[j].join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		System.out.println("\nDocuments created...");
 	}
 	
 	private static String getHTML(String urlString){
@@ -84,31 +143,25 @@ public class Main {
 		return html;
 	}
 	
-	
 	private static boolean valid(String s) {
 	    if (s.matches("javascript:.*|mailto:.*")) {
 	      return false;
 	    }
+	    	    
+	    if(s.matches("(?i).*installing.*|.*installation.*")){
+	    	return false;
+	    }
 	    return true;
-	  }
-
-	  private static String makeAbsolute(String url, String link) {
-	    if (link.matches("http://.*")) {
-	      return link;
-	    }
-	    if (link.matches("/.*") && url.matches(".*$[^/]")) {
-	      return url + "/" + link;
-	    }
-	    if (link.matches("[^/].*") && url.matches(".*[^/]")) {
-	      return url + "/" + link;
-	    }
-	    if (link.matches("/.*") && url.matches(".*[/]")) {
-	      return url + link;
-	    }
-	    if (link.matches("/.*") && url.matches(".*[^/]")) {
-	      return url + link;
-	    }
-	    throw new RuntimeException("Cannot make the link absolute. Url: " + url
-	        + " Link " + link);
-	  }
+	}
+	
+	public static synchronized String getNextLink(){
+		if(!links.isEmpty()){
+			return links.poll();
+		}
+		return null;
+	}
+	
+	public static synchronized void addDocument(Document doc){
+		corpus.add(doc);
+	}
 }
