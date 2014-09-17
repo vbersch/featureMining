@@ -1,9 +1,12 @@
 package featureMining;
 
+import featureMining.ui.RootFeatureWindow;
 import gate.Corpus;
 import gate.Document;
 import gate.Factory;
+import gate.FeatureMap;
 import gate.Gate;
+import gate.creole.ResourceInstantiationException;
 import gate.util.GateException;
 
 import java.io.IOException;
@@ -21,44 +24,83 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 //main class
-public class Main {
+public class FeatureMining {//Singleton
 	
 	private static Pattern htmltagPattern = Pattern.compile("<a\\b[^>]*href=\"[^>]*>(.*?)</a>");
 	private static Pattern linkPattern = Pattern.compile("href=\"[^>]*\">");
-	private static Corpus corpus;
-	private static String hostName;
+	private Corpus corpus;
+	private String hostName;
 	private static int maxThreads = 4;
-	private static Queue<String> links;
+	private String baseUrl;
+	private Queue<String> links;
+	private DocAnnotator docAnnotator;
+	private RootFeatureWindow rootWindow;
+	private static FeatureMining instance = null;
 	
-	public static void main(String[] args) {
-		
-		//init
-		String baseUrl = "";
+	private FeatureMining(){
+		// init
+		this.baseUrl = "";
 		links = new LinkedList<String>();
+	}
+	
+	public static FeatureMining getSingleton(){
+		if(instance == null){
+			instance = new FeatureMining();
+		}
+		return instance;
+	}
+	
+	private void go(String[] args) {
 		
-		if(args.length < 1){
+		if (args.length < 1) {
 			System.out.println("Pass a url as argument!");
 			System.exit(0);
-		}else{
-			baseUrl = args[0];
+		} else {
+			this.baseUrl = args[0];
 		}
 		
-	    Pattern hostPattern = Pattern.compile("//.*?/");
-		Matcher hostMatcher = hostPattern.matcher(baseUrl);
+		Pattern hostPattern = Pattern.compile("//.*?/");
+		Matcher hostMatcher = hostPattern.matcher(this.baseUrl);
 		hostMatcher.find();
-		hostName = hostMatcher.group().replaceAll("/", "");
-		
+		this.hostName = hostMatcher.group();
 		try {
 			Gate.init();
-			corpus = Factory.newCorpus(hostName);
+			corpus = Factory.newCorpus(this.hostName);
 		} catch (GateException e1) {
 			e1.printStackTrace();
 		}
-		getContentFromBaseUrl(baseUrl);  
+		
+		rootWindow = new RootFeatureWindow();
+		//getContentFromBaseUrl(baseUrl);
+		//gateTest(baseUrl);
 	}
 	
+	public RootFeatureWindow getRootWindow() {
+		return rootWindow;
+	}
+
+	//just some experiments..
+	public void gateTest(String baseUrl){
+		
+		String html = getHTML(baseUrl);
+		try {
+			//System.out.println("html: " + html);
+			FeatureMap params = Factory.newFeatureMap();	
+			params.put("encoding", "UTF-8");
+			Document doc;
+			doc = Factory.newDocument(html);
+			doc.setPreserveOriginalContent(false);
+			doc.setFeatures(params);
+			docAnnotator = new DocAnnotator(doc);
+			docAnnotator.processDocument();
+			//System.out.println("Doc annotations: \n" + doc.getAnnotations("Original markups").getAllTypes().toString());
+		} catch (ResourceInstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	}
 	
-	private static void getContentFromBaseUrl(String baseUrl){
+	private void getContentFromBaseUrl(String baseUrl){
 		String baseContent 	= getHTML(baseUrl); //get html for the initial site
 
 		System.out.println("hostName: " + hostName);
@@ -154,14 +196,20 @@ public class Main {
 	    return true;
 	}
 	
-	public static synchronized String getNextLink(){
+	public synchronized String getNextLink(){
 		if(!links.isEmpty()){
 			return links.poll();
 		}
 		return null;
 	}
 	
-	public static synchronized void addDocument(Document doc){
+	public synchronized void addDocument(Document doc){
 		corpus.add(doc);
 	}
+	
+	public static void main(String[] args) {
+		FeatureMining mainApp = getSingleton();
+		mainApp.go(args);
+	}
+	
 }
