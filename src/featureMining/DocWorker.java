@@ -32,7 +32,8 @@ public class DocWorker extends Thread {
     @Override
     public void run() {
     	
-    	String url = FeatureMining.getSingleton().getNextLink();
+    	String url = null; 
+    	//= FeatureMining.getSingleton().getNextLink();
     	while(url != null){
     		HttpGet httpget = new HttpGet(url);
     		System.out.println("Thread " + this.id + ": getting " + url);
@@ -52,7 +53,7 @@ public class DocWorker extends Thread {
 					doc.setFeatures(params);
 	                
 					//add document to the corpus 
-					FeatureMining.getSingleton().addDocument(doc);
+					//FeatureMining.getSingleton().addDocument(doc);
 	            } catch (ResourceInstantiationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -64,7 +65,7 @@ public class DocWorker extends Thread {
 	        } catch (IOException ex) {
 	            // Handle I/O errors
 	        }
-	        url = FeatureMining.getSingleton().getNextLink();
+	        //url = FeatureMining.getSingleton().getNextLink();
     	}
     }
 	
