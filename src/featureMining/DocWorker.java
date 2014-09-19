@@ -1,5 +1,6 @@
 package featureMining;
 
+import featureMining.processing.HtmlProcessor;
 import gate.Document;
 import gate.Factory;
 import gate.FeatureMap;
@@ -17,25 +18,43 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class DocWorker.
+ */
 public class DocWorker extends Thread {
 
+	/** The http client. */
 	private final CloseableHttpClient httpClient;
+    
+    /** The context. */
     private final HttpContext context;
+    
+    /** The id. */
     private final int id;
     
+    /**
+     * Instantiates a new doc worker.
+     *
+     * @param httpClient the http client
+     * @param id the id
+     */
     public DocWorker(CloseableHttpClient httpClient, int id) {
         this.httpClient = httpClient;
         this.context = HttpClientContext.create();
         this.id = id;
     }
     
+    /* (non-Javadoc)
+     * @see java.lang.Thread#run()
+     */
     @Override
     public void run() {
     	
-    	String url = null; 
-    	//= FeatureMining.getSingleton().getNextLink();
+    	String url = ((HtmlProcessor)FeatureMining.getSingleton().getDocumentProcessor()).getNextLink();
     	while(url != null){
     		HttpGet httpget = new HttpGet(url);
+    		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nThread " + this.id + ": getting " + url);
     		System.out.println("Thread " + this.id + ": getting " + url);
 	        try {
 	            CloseableHttpResponse response = httpClient.execute(httpget, context);
@@ -51,9 +70,10 @@ public class DocWorker extends Thread {
 					Document doc = Factory.newDocument(html);
 					doc.setPreserveOriginalContent(false);
 					doc.setFeatures(params);
+					doc.setName(url);
 	                
 					//add document to the corpus 
-					//FeatureMining.getSingleton().addDocument(doc);
+					FeatureMining.getSingleton().getDocumentProcessor().addDocument(doc);
 	            } catch (ResourceInstantiationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -65,7 +85,7 @@ public class DocWorker extends Thread {
 	        } catch (IOException ex) {
 	            // Handle I/O errors
 	        }
-	        //url = FeatureMining.getSingleton().getNextLink();
+	        url = ((HtmlProcessor)FeatureMining.getSingleton().getDocumentProcessor()).getNextLink();
     	}
     }
 	

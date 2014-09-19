@@ -1,39 +1,42 @@
 package featureMining;
 
+import javax.swing.SwingUtilities;
+
 import featureMining.processing.HtmlProcessor;
+import featureMining.processing.SimpleProcessor;
 import featureMining.ui.RootFeatureWindow;
-import gate.Corpus;
-import gate.Document;
-import gate.Factory;
-import gate.FeatureMap;
 import gate.Gate;
-import gate.creole.ResourceInstantiationException;
 import gate.util.GateException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-
+// TODO: Auto-generated Javadoc
 //main class
+/**
+ * The Class FeatureMining.
+ */
 public class FeatureMining {//Singleton
 	
-	public static int maxThreads = 4;
+	/** The max threads. */
+public static int maxThreads = 4;
+	
+	/** The document processor. */
 	private SimpleProcessor documentProcessor;
+	
+	/** The root window. */
 	private RootFeatureWindow rootWindow;
+	
+	/** The instance. */
 	private static FeatureMining instance = null;
 	
+	/**
+	 * Instantiates a new feature mining.
+	 */
 	private FeatureMining(){}
 	
+	/**
+	 * Gets the singleton.
+	 *
+	 * @return the singleton
+	 */
 	public static FeatureMining getSingleton(){
 		if(instance == null){
 			instance = new FeatureMining();
@@ -41,15 +44,35 @@ public class FeatureMining {//Singleton
 		return instance;
 	}
 	
-	private void go(String[] args) {		
-		rootWindow = new RootFeatureWindow();
+	/**
+	 * Go.
+	 *
+	 * @param args the args
+	 */
+	private void go(String[] args) {
+		SwingUtilities.invokeLater(new Runnable() {
+		    public void run() {
+		    	rootWindow = new RootFeatureWindow();
+		    }
+		});
+		
 		documentProcessor = new HtmlProcessor();
 	}
 	
+	/**
+	 * Gets the root window.
+	 *
+	 * @return the root window
+	 */
 	public RootFeatureWindow getRootWindow() {
 		return rootWindow;
 	}
 	
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 */
 	public static void main(String[] args) {
 		
 		try {
@@ -62,6 +85,11 @@ public class FeatureMining {//Singleton
 		mainApp.go(args);
 	}
 
+	/**
+	 * Gets the document processor.
+	 *
+	 * @return the document processor
+	 */
 	public SimpleProcessor getDocumentProcessor() {
 		return this.documentProcessor;
 	}

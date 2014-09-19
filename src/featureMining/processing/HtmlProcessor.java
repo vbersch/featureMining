@@ -2,14 +2,12 @@ package featureMining.processing;
 
 import featureMining.DocWorker;
 import featureMining.FeatureMining;
-import featureMining.SimpleProcessor;
+import featureMining.processing.feature.FeatureContainer;
 import gate.Annotation;
 import gate.AnnotationSet;
-import gate.Corpus;
 import gate.Document;
 import gate.Factory;
 import gate.FeatureMap;
-import gate.Gate;
 import gate.creole.ResourceInstantiationException;
 import gate.creole.SerialAnalyserController;
 import gate.util.GateException;
@@ -30,19 +28,41 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HtmlProcessor.
+ */
 public class HtmlProcessor extends SimpleProcessor{
 	
+	/** The htmltag pattern. */
 	private static Pattern htmltagPattern = Pattern.compile("<a\\b[^>]*href=\"[^>]*>(.*?)</a>");
+	
+	/** The link pattern. */
 	private static Pattern linkPattern = Pattern.compile("href=\"[^>]*\">");
+	
+	/** The host name. */
 	private String hostName;
+	
+	private String baseUrl;
+	
+	/** The links. */
 	private Queue<String> links;
 	
+	/** The feature container. */
+	private FeatureContainer featureContainer;
+	
+	/**
+	 * Instantiates a new html processor.
+	 */
 	public HtmlProcessor(){
 		links = new LinkedList<String>();
-		featureStrings = new ArrayList<String>();
+		featureContainer = new FeatureContainer();
 	}
 	
-	public void processCorpus(){
+	/* (non-Javadoc)
+	 * @see featureMining.processing.SimpleProcessor#processCorpus()
+	 */
+	public FeatureContainer processCorpus(){
 		
 		String[] processingResources = {
 				"gate.creole.tokeniser.DefaultTokeniser",
@@ -56,83 +76,101 @@ public class HtmlProcessor extends SimpleProcessor{
 			e.printStackTrace();
 		}
 		
-		System.out.println("\ntest: " + this.testDoc.getAnnotations().getAllTypes().toString());
-		AnnotationSet defaultAnnots = this.testDoc.getAnnotations();
-		AnnotationSet tokens = defaultAnnots.get("Token");
-		AnnotationSet origAnnots = this.testDoc.getAnnotations("Original markups");
-		AnnotationSet listEl = origAnnots.get("li");
-		AnnotationSet featureAnnots = this.testDoc.getAnnotations("Feature Annotations");
-		
-		Iterator<Annotation> it = listEl.iterator();
-		while(it.hasNext()){
-			Annotation next = it.next();
-			if(!listEl.getContained(next.getStartNode().getOffset(), next.getEndNode().getOffset()).contains("li")){
-				Iterator<Annotation> it2 = tokens.getContained(next.getStartNode().getOffset(), next.getEndNode().getOffset()).iterator();
-				String heading = "";
-				while(it2.hasNext()){
-					Annotation token = it2.next();
-					String category = token.getFeatures().get("category").toString();
-					if(category == "NNP" || category == "NNS"){
-						featureStrings.add(gate.Utils.stringFor(this.testDoc, token));
-						featureAnnots.add(token);
-						heading += gate.Utils.stringFor(this.testDoc, token) + " ";
+		Iterator<Document> docIterator = this.corpus.iterator();
+		while(docIterator.hasNext()){
+			Document doc = docIterator.next();
+			AnnotationSet defaultAnnots = doc.getAnnotations();
+			AnnotationSet tokens = defaultAnnots.get("Token");
+			AnnotationSet origAnnots = doc.getAnnotations("Original markups");
+			AnnotationSet listEl = origAnnots.get("li");
+			AnnotationSet featureAnnots = doc.getAnnotations("Feature Annotations");
+			
+			Iterator<Annotation> it = listEl.iterator();
+			while(it.hasNext()){
+				Annotation next = it.next();
+				if(!listEl.getContained(next.getStartNode().getOffset(), next.getEndNode().getOffset()).contains("li")){
+					Iterator<Annotation> it2 = tokens.getContained(next.getStartNode().getOffset(), next.getEndNode().getOffset()).iterator();
+					String heading = "";
+					while(it2.hasNext()){
+						Annotation token = it2.next();
+						String category = token.getFeatures().get("category").toString();
+						if(category == "NNP" || category == "NNS"){
+							featureContainer.add(gate.Utils.stringFor(doc, token) , doc.getName());
+							featureAnnots.add(token);
+							heading += gate.Utils.stringFor(doc, token) + " ";
+						}
 					}
 				}
-				System.out.println(heading);
 			}
 		}
-		FeatureMining.getSingleton().getRootWindow().fillFeatureList(featureStrings);
+		return featureContainer;
 	}
 	
+	/**
+	 * Run processing resources.
+	 *
+	 * @param processingResource the processing resource
+	 * @throws GateException the gate exception
+	 */
 	private void runProcessingResources(String[] processingResource)
 	          throws GateException {
 	    SerialAnalyserController pipeline = (SerialAnalyserController)Factory
 	            .createResource("gate.creole.SerialAnalyserController");
 
 	    for(int pr = 0; pr < processingResource.length; pr++) {
-	      System.out.print("\t* Loading " + processingResource[pr] + " ... ");
-	      pipeline.add((gate.LanguageAnalyser)Factory
-	              .createResource(processingResource[pr]));
-	      System.out.println("done");
+	    	FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\n\t* Loading " + processingResource[pr] + " ... ");
+	    	System.out.print("\n\t* Loading " + processingResource[pr] + " ... ");
+	    	pipeline.add((gate.LanguageAnalyser)Factory
+	    			.createResource(processingResource[pr]));
+	    	FeatureMining.getSingleton().getRootWindow().addInfoTextLine("done");
+	    	System.out.println("done");
 	    }
 	    pipeline.setCorpus(this.corpus);
+	    FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nRunning processing resources over corpus...");
 	    System.out.print("Running processing resources over corpus...");
 	    pipeline.execute();
+	    FeatureMining.getSingleton().getRootWindow().addInfoTextLine("done");
 	    System.out.println("done");
-	  }
+	}
 
+	/* (non-Javadoc)
+	 * @see featureMining.processing.SimpleProcessor#createCorpus(java.lang.String)
+	 */
 	@Override
 	public void createCorpus(String address) {
-		try {
-			String html = getHTML(address);
-			FeatureMap params = Factory.newFeatureMap();	
-			params.put("encoding", "UTF-8");
-			this.testDoc = Factory.newDocument(html);
-			this.testDoc.setPreserveOriginalContent(false);
-			this.testDoc.setFeatures(params);
-			corpus = gate.Factory.newCorpus("testCorpus");
-		} catch (ResourceInstantiationException e) {
-			e.printStackTrace();
-		}
 		
-		this.corpus.add(this.testDoc);
 		Pattern hostPattern = Pattern.compile("//.*?/");
 		Matcher hostMatcher = hostPattern.matcher(address);
 		hostMatcher.find();
 		this.hostName = hostMatcher.group();
+		
+		try {
+			corpus = gate.Factory.newCorpus("testCorpus");
+		} catch (ResourceInstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		this.baseUrl = address;
+		String html = getHTML(address);
+		this.getContentFromBaseUrl(html);
+			
 	}
 	
-	private void getContentFromBaseUrl(String baseUrl){
-		String baseContent 	= getHTML(baseUrl); //get html for the initial site
-
-		System.out.println("hostName: " + hostName);
+	/**
+	 * Gets the content from base url.
+	 *
+	 * @param baseUrl the base url
+	 * @return the content from base url
+	 */
+	private void getContentFromBaseUrl(String baseContent){
+		System.out.println("hostName: " + this.hostName);
 		
 		if(baseContent == ""){
 			System.out.println("Cannot read base Url");
 			System.exit(0);
 		}
 		
-		links.offer(baseUrl);
+		links.offer(this.baseUrl);
 		
 		Matcher tagmatch = htmltagPattern.matcher(baseContent);
 		while (tagmatch.find()) {
@@ -158,6 +196,7 @@ public class HtmlProcessor extends SimpleProcessor{
 			}
 		}
 		
+		featureContainer.setLinkNum(links.size());
 		System.out.println("\nFound " + links.size() + " Links on " + baseUrl );
 		
 		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
@@ -186,9 +225,18 @@ public class HtmlProcessor extends SimpleProcessor{
 			}
 		}
 		
+		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nDocuments created...");
+		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nStarting Gate Processing Units...\n");
+		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\n--------------------------------------\n");
 		System.out.println("\nDocuments created...");
 	}
 	
+	/**
+	 * Valid.
+	 *
+	 * @param s the s
+	 * @return true, if successful
+	 */
 	private static boolean valid(String s) {
 	    if (s.matches("javascript:.*|mailto:.*")) {
 	      return false;
@@ -200,6 +248,11 @@ public class HtmlProcessor extends SimpleProcessor{
 	    return true;
 	}
 	
+	/**
+	 * Gets the next link.
+	 *
+	 * @return the next link
+	 */
 	public synchronized String getNextLink(){
 		if(!links.isEmpty()){
 			return links.poll();
@@ -207,16 +260,28 @@ public class HtmlProcessor extends SimpleProcessor{
 		return null;
 	}
 	
+	/**
+	 * Adds the document.
+	 *
+	 * @param doc the doc
+	 */
 	public synchronized void addDocument(Document doc){
 		corpus.add(doc);
 	}
 	
+	/**
+	 * Gets the html.
+	 *
+	 * @param urlString the url string
+	 * @return the html
+	 */
 	private static String getHTML(String urlString){
 		URL url;
 		HttpURLConnection conn;
 		InputStream is;
 		String html = "";
 		try {
+			FeatureMining.getSingleton().getRootWindow().setInfoText("Connecting to... " + urlString);
 			System.out.println("Connecting to... " + urlString);
 			url = new URL(urlString);
 			conn = (HttpURLConnection) url.openConnection();
