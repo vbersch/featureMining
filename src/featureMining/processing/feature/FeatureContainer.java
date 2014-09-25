@@ -1,5 +1,6 @@
 package featureMining.processing.feature;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 // TODO: Auto-generated Javadoc
@@ -11,9 +12,6 @@ public class FeatureContainer {
 	/** The feature storage. */
 	private HashMap<String, Feature> featureStorage;
 	
-	/** The feature candidates. */
-	private HashMap<String, Feature> featureCandidates;
-	
 	private int linkNum;
 	
 	/**
@@ -21,7 +19,6 @@ public class FeatureContainer {
 	 */
 	public FeatureContainer(){
 		this.featureStorage = new HashMap<String, Feature>();
-		this.featureCandidates = new HashMap<String, Feature>();
 		linkNum = 0;
 	}
 	
@@ -38,11 +35,25 @@ public class FeatureContainer {
 	 *
 	 * @param featureString the feature string
 	 */
-	public void add(String featureString, String sourceUrl){
-		if(this.featureStorage.containsKey(featureString)){
-			this.featureStorage.get(featureString).add();
-		}else{
-			this.featureStorage.put(featureString , new Feature(featureString,sourceUrl));
+	public void add(String featureString, String sourceUrl, String wholeSentence){
+		String newFeature = "";
+		ArrayList<String> singleWords = new ArrayList<String>();
+		//filter some words
+		String[] words = featureString.split(" ");
+		for(String word : words){
+			if(word.matches("[a-zA-Z]*") && !word.matches("[a-zA-Z]")){ // only letters 
+				newFeature += word + " ";
+				singleWords.add(word);
+			}
+		}
+		newFeature = newFeature.trim();
+		
+		if(newFeature != ""){
+			if(this.featureStorage.containsKey(newFeature)){
+				this.featureStorage.get(newFeature).add(wholeSentence);
+			}else{
+				this.featureStorage.put(newFeature , new Feature(newFeature, sourceUrl, singleWords, wholeSentence));
+			}
 		}
 	}
 
@@ -69,4 +80,24 @@ public class FeatureContainer {
 		info += "\n#Found in: \t" + feature.getSourceName();
 		return info;
 	}
+	
+	public void addOccurence(String key, String wholeSentence){
+		this.featureStorage.get(key).addDescSentence(wholeSentence);
+	}
+	
+	public String getDescriptionText(String key){
+		String desc = "";
+		
+		Feature feature = this.featureStorage.get(key);
+		
+		for(String text : feature.getDescription()){
+			desc += text + "\n-------------------\n";
+		}
+		return desc;
+	}
+
+	public void deleteFeature(String key) {
+		this.featureStorage.remove(key);
+	}
+	
 }

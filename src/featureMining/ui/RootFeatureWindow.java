@@ -1,6 +1,8 @@
 package featureMining.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +13,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -40,7 +43,9 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
-
+	
+	private JPanel editBox;
+	
 	/** The main container. */
 	private JPanel mainContainer;
 
@@ -95,7 +100,6 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		guiListener = new GuiListener();
 
 		DefaultListModel listModel = new DefaultListModel();
-		DefaultListModel listModel2 = new DefaultListModel();
 
 		featureList = new JList(listModel);
 		featureList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -104,10 +108,10 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		JScrollPane listScrollPane = new JScrollPane(featureList);
 		featureList.addListSelectionListener(guiListener);
 
-		JList list2 = new JList(listModel2);
-		list2.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list2.setVisibleRowCount(5);
-		JScrollPane listScrollPane2 = new JScrollPane(list2);
+//		JList list2 = new JList(listModel2);
+//		list2.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//		list2.setVisibleRowCount(5);
+//		JScrollPane listScrollPane2 = new JScrollPane(list2);
 
 		JButton fireButton = new JButton("mine URL");
 		fireButton.setEnabled(true);
@@ -131,12 +135,16 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 		JPanel listPane = new JPanel();
 		listPane.setLayout(new BoxLayout(listPane, BoxLayout.LINE_AXIS));
-
+		
+		this.editBox = this.createEditBox();
+		editBox.setVisible(false);
 		listPane.add(listScrollPane);
 		listPane.add(Box.createHorizontalStrut(20));
-		listPane.add(listScrollPane2);
+		listPane.add(editBox);
 		listPane.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
-
+		
+		//listPane.setMaximumSize(new Dimension(1000,1000));
+		
 		JTabbedPane infoTabs = new JTabbedPane();
 
 		this.infoPane = createInfoTextArea("Info");
@@ -144,7 +152,12 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 		infoTabs.addTab("Info", infoPane);
 		infoTabs.addTab("Description", descPane);
-
+		
+		listScrollPane.setPreferredSize(new Dimension(250 , 200));
+		infoTabs.setMinimumSize(new Dimension(300 , 200));
+		infoTabs.setPreferredSize(new Dimension(400 , 300));
+		listPane.setPreferredSize(new Dimension(500 , 400));
+		
 		contentPane.add(listPane);
 		contentPane.add(infoTabs);
 
@@ -153,6 +166,35 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 		this.createMenu();
 
+	}
+
+	private JPanel createEditBox() {
+		JPanel editBox = new JPanel(new BorderLayout());
+		//editBox.setMaximumSize(new Dimension(50,50));
+		
+		JButton changeButton = new JButton("Change");
+		JButton deleteButton = new JButton("Delete Feature");
+		
+		
+		deleteButton.setBackground(Color.RED);
+		deleteButton.addActionListener(guiListener);
+		deleteButton.setName("delete");
+		
+		JTextField textField = new JTextField(10);
+		textField.setText("Enter new Name");
+		
+		JPanel buttonPane = new JPanel();
+		buttonPane.setLayout(new BoxLayout(buttonPane , BoxLayout.LINE_AXIS));
+		buttonPane.add(textField);
+		buttonPane.add(Box.createHorizontalStrut(5));
+		buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
+		buttonPane.add(Box.createHorizontalStrut(5));
+		buttonPane.add(changeButton);
+		buttonPane.add(deleteButton);
+		buttonPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		
+		editBox.add(buttonPane , BorderLayout.PAGE_END);
+		return editBox;
 	}
 
 	/**
@@ -319,5 +361,17 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 				infoTextArea.setText(string);
 			}
 		});
+	}
+
+	public JPanel getEditBox() {
+		return this.editBox;
+	}
+
+	public void updateFeatureList() {
+		DefaultListModel model = (DefaultListModel) this.featureList.getModel();
+		model.clear();
+		for (String key : featureContainer.getFeatureStorage().keySet()) {
+			model.addElement(key);
+		}
 	}
 }

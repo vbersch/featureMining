@@ -25,6 +25,7 @@ public class UiWorker extends SwingWorker<FeatureContainer, String> {
 	public UiWorker(String url, JTextArea infoTextArea) {
 		this.url = url;
 		this.infoTextArea = infoTextArea;
+		this.container = null;
 	}
 
 	@Override
@@ -38,7 +39,9 @@ public class UiWorker extends SwingWorker<FeatureContainer, String> {
 	
 	@Override
 	protected void done(){
-		FeatureMining.getSingleton().getRootWindow().setContent(container);
+		if(this.container != null){
+			FeatureMining.getSingleton().getRootWindow().setContent(container);
+		}
 	}
 
 }

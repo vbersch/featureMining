@@ -20,23 +20,33 @@ public class Feature {
 	
 	private String sourceName;
 	
+	private ArrayList<String> description;
+	
+	private ArrayList<String> singleWords;
+	
 	/**
 	 * Instantiates a new feature.
 	 *
 	 * @param name the name
 	 */
-	public Feature(String name, String sourceName){
+	public Feature(String name, String sourceName, ArrayList<String> singleWords, String wholeSentence){
 		this.name = name;
 		occurence = 1;
 		synonyms = null;
 		this.sourceName = sourceName;
+		this.singleWords = singleWords;
+		description = new ArrayList<String>();
+		description.add(wholeSentence);
 	}
 	
 	/**
 	 * Adds the.
 	 */
-	public void add(){
+	public void add(String wholeSentence){
 		occurence++;
+		if(!description.contains(wholeSentence)){
+			description.add(wholeSentence);
+		}
 	}
 
 	/**
@@ -46,6 +56,10 @@ public class Feature {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	public ArrayList<String> getDescription() {
+		return description;
 	}
 
 	public String getSourceName() {
@@ -68,6 +82,12 @@ public class Feature {
 	 */
 	public ArrayList<String> getSynonyms() {
 		return synonyms;
+	}
+
+	public void addDescSentence(String wholeSentence) {
+		if(!description.contains(wholeSentence)){
+			description.add(wholeSentence);
+		}
 	}
 	
 }
