@@ -8,16 +8,31 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import featureMining.feature.FeatureContainer;
+import featureMining.main.FeatureMining;
 import gate.Annotation;
 import gate.AnnotationSet;
 import gate.Corpus;
 import gate.Document;
+import gate.Factory;
+import gate.creole.SerialAnalyserController;
+import gate.util.GateException;
 import gate.util.OffsetComparator;
 
 public class DocumentProcessor implements ISimpleProcessor{
 
 	@Override
 	public FeatureContainer processCorpus(FeatureContainer featureContainer, Corpus corpus) {
+		
+		String[] processingResources = {
+				"gate.creole.tokeniser.DefaultTokeniser",
+				"gate.creole.splitter.SentenceSplitter",
+				"gate.creole.POSTagger" };
+
+		try {
+			runProcessingResources(processingResources, corpus);
+		} catch (GateException e) {
+			e.printStackTrace();
+		}
 		
 		Iterator<Document> docIterator = corpus.iterator();
 		while (docIterator.hasNext()) {
@@ -103,6 +118,37 @@ public class DocumentProcessor implements ISimpleProcessor{
 			}
 		}
 		return featureContainer;
+	}
+	
+	private void runProcessingResources(String[] processingResource, Corpus corpus)
+			throws GateException {
+		SerialAnalyserController pipeline = (SerialAnalyserController) Factory
+				.createResource("gate.creole.SerialAnalyserController");
+
+		for (int pr = 0; pr < processingResource.length; pr++) {
+			FeatureMining
+					.getSingleton()
+					.getRootWindow()
+					.addInfoTextLine(
+							"\n\t* Loading " + processingResource[pr] + " ... ");
+			System.out.print("\n\t* Loading " + processingResource[pr]
+					+ " ... ");
+			pipeline.add((gate.LanguageAnalyser) Factory
+					.createResource(processingResource[pr]));
+			FeatureMining.getSingleton().getRootWindow()
+					.addInfoTextLine("done");
+			System.out.println("done");
+		}
+		pipeline.setCorpus(corpus);
+		FeatureMining
+				.getSingleton()
+				.getRootWindow()
+				.addInfoTextLine(
+						"\nRunning processing resources over corpus...");
+		System.out.print("Running processing resources over corpus...");
+		pipeline.execute();
+		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("done");
+		System.out.println("done");
 	}
 	
 }

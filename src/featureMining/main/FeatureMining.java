@@ -6,7 +6,7 @@ import featureMining.feature.FeatureContainer;
 import featureMining.preprocessing.IDocumentPreprocessor;
 import featureMining.preprocessing.html.HtmlPreprocessor;
 import featureMining.processing.DocumentProcessor;
-import featureMining.processing.ISimpleProcessor;
+import featureMining.ui.OptionTransferObject;
 import featureMining.ui.RootFeatureWindow;
 import gate.Corpus;
 import gate.Gate;
@@ -20,7 +20,7 @@ import gate.util.GateException;
 public class FeatureMining {//Singleton
 	
 	/** The max threads. */
-public static int maxThreads = 4;
+	public static int maxThreads = 4;
 	
 	/** The document processor. */
 	private DocumentProcessor documentProcessor;
@@ -29,6 +29,8 @@ public static int maxThreads = 4;
 	
 	/** The root window. */
 	private RootFeatureWindow rootWindow;
+
+	private String preprocessorName;
 	
 	/** The instance. */
 	private static FeatureMining instance = null;
@@ -105,15 +107,30 @@ public static int maxThreads = 4;
 		return documentPreprocessor;
 	}
 
-	public FeatureContainer doProcessing(String url, String hostName) {
+	public FeatureContainer doProcessing(OptionTransferObject optionsTO) {
 		
 		FeatureContainer featureContainer = new FeatureContainer();
-		this.documentPreprocessor = new HtmlPreprocessor();
-		Corpus corpus = this.documentPreprocessor.createAnnotatedCorpus(url, hostName);
+		
+		if(optionsTO.getPreprocessingName() == "HTML"){
+			this.documentPreprocessor = new HtmlPreprocessor();
+		}
+		
+		maxThreads = optionsTO.getThreadNum();
+		
+		Corpus corpus = this.documentPreprocessor.createAnnotatedCorpus(optionsTO);
 		documentProcessor = new DocumentProcessor();
 		documentProcessor.processCorpus(featureContainer, corpus);
 		
 		return featureContainer;
+	}
+
+	public void setThreadNum(int threadNum) {
+		maxThreads = threadNum; 
+		
+	}
+
+	public void setPreprocessor(String preprocessor) {
+		this.preprocessorName = preprocessor;
 	}
 	
 }

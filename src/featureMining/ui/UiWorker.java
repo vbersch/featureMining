@@ -10,34 +10,20 @@ import featureMining.main.FeatureMining;
 
 public class UiWorker extends SwingWorker<FeatureContainer, String> {
 
-	private String url;
-	private String hostName;
+	private OptionTransferObject optionsTO;
 	private JTextArea infoTextArea;
 	private FeatureContainer container;
 	
+	public UiWorker(JTextArea infoTextArea, OptionTransferObject optionsTO) {
+		this.optionsTO = optionsTO;
+		this.infoTextArea = infoTextArea;
+		this.container = null;	
+	}
+	
 	@Override
 	protected FeatureContainer doInBackground() throws Exception {
-		this.container = FeatureMining.getSingleton().doProcessing(url, hostName);
-//		FeatureMining.getSingleton().getDocumentProcessor()
-//		.createCorpus(url);
-//		this.container = FeatureMining.getSingleton().getDocumentProcessor().processCorpus();
+		this.container = FeatureMining.getSingleton().doProcessing(optionsTO);
 		return container;
-	}
-
-	public UiWorker(String url, JTextArea infoTextArea, String hostName) {
-		this.url = url;
-		this.infoTextArea = infoTextArea;
-		this.container = null;
-		this.hostName = hostName;
-	}
-
-	@Override
-	protected void process(final List<String> chunks) {
-		// Updates the messages text area
-		for (final String string : chunks) {
-			infoTextArea.append(string);
-			infoTextArea.append("\n");
-		}
 	}
 	
 	@Override

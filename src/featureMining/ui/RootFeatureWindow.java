@@ -15,6 +15,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -43,6 +44,8 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+	
+	private OptionWindow optionFrame;
 	
 	private JPanel editBox;
 	
@@ -328,8 +331,19 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e){
-		UiWorker uiWorker = new UiWorker(urlField.getText(), infoTextArea, "");
-		uiWorker.execute();
+		this.showOptionsPane();
+	}
+	
+	private void showOptionsPane(){
+		optionFrame = new OptionWindow(urlField.getText());
+	}
+	
+	public GuiListener getGuiListener() {
+		return guiListener;
+	}
+
+	public OptionWindow getOptionFrame() {
+		return optionFrame;
 	}
 
 	/**

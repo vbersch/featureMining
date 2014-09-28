@@ -1,11 +1,10 @@
 package featureMining.preprocessing;
 
+import featureMining.ui.OptionTransferObject;
 import gate.Corpus;
-import gate.Document;
 
 public interface IDocumentPreprocessor {
 
-	
-	public Corpus createAnnotatedCorpus(String address, String hostName);
+	public Corpus createAnnotatedCorpus(OptionTransferObject optionsTO);
 
 }

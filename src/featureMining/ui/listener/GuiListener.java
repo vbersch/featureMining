@@ -2,8 +2,12 @@ package featureMining.ui.listener;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -11,7 +15,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import featureMining.main.FeatureMining;
+import featureMining.ui.OptionTransferObject;
+import featureMining.ui.OptionWindow;
 import featureMining.ui.RootFeatureWindow;
+import featureMining.ui.UiWorker;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -25,7 +32,7 @@ import featureMining.ui.RootFeatureWindow;
  *
  * @see GuiEvent
  */
-public class GuiListener implements ActionListener, ListSelectionListener{
+public class GuiListener implements ActionListener, ListSelectionListener, ItemListener{
 	
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
@@ -69,6 +76,15 @@ public class GuiListener implements ActionListener, ListSelectionListener{
 						rootWindow.updateFeatureList();
 					}
 				}
+			}else if(button.getName() == "cancelOptions"){
+				rootWindow.getOptionFrame().dispose();
+			}else if(button.getName() == "featureMining"){
+				OptionWindow optionWindow = rootWindow.getOptionFrame();
+				OptionTransferObject optionsTO = new OptionTransferObject(optionWindow.getBaseUrl(), optionWindow.getHostName(),
+						optionWindow.getPreprocessor(), optionWindow.getThreadNum(), optionWindow.getDocumentationType());
+				UiWorker uiWorker = new UiWorker(rootWindow.getInfoTextArea(), optionsTO);
+				uiWorker.execute();
+				optionWindow.dispose();
 			}
 		}
 	}
@@ -84,6 +100,19 @@ public class GuiListener implements ActionListener, ListSelectionListener{
 			rootWindow.getEditBox().setVisible(true);
 			rootWindow.getInfoTextArea().setText(rootWindow.getFeatureContainer().getInfoText((String) list.getSelectedValue()));
 			rootWindow.getDescTextArea().setText(rootWindow.getFeatureContainer().getDescriptionText((String) list.getSelectedValue()));
+		}
+	}
+
+	@Override
+	public void itemStateChanged(ItemEvent evt) {
+		JComboBox comboBox = (JComboBox)evt.getSource();
+		RootFeatureWindow rootWindow = FeatureMining.getSingleton().getRootWindow();
+		if (evt.getStateChange() == ItemEvent.SELECTED){
+			if((String)comboBox.getSelectedItem() == "Html"){
+				rootWindow.getOptionFrame().addHtmlOptions();
+			}else{
+				rootWindow.getOptionFrame().removeHtmlOptions();
+			}
 		}
 	}
 
