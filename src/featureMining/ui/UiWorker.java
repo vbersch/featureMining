@@ -5,27 +5,30 @@ import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 
-import featureMining.FeatureMining;
-import featureMining.processing.feature.FeatureContainer;
+import featureMining.feature.FeatureContainer;
+import featureMining.main.FeatureMining;
 
 public class UiWorker extends SwingWorker<FeatureContainer, String> {
 
 	private String url;
+	private String hostName;
 	private JTextArea infoTextArea;
 	private FeatureContainer container;
 	
 	@Override
 	protected FeatureContainer doInBackground() throws Exception {
-		FeatureMining.getSingleton().getDocumentProcessor()
-		.createCorpus(url);
-		this.container = FeatureMining.getSingleton().getDocumentProcessor().processCorpus();
+		this.container = FeatureMining.getSingleton().doProcessing(url, hostName);
+//		FeatureMining.getSingleton().getDocumentProcessor()
+//		.createCorpus(url);
+//		this.container = FeatureMining.getSingleton().getDocumentProcessor().processCorpus();
 		return container;
 	}
 
-	public UiWorker(String url, JTextArea infoTextArea) {
+	public UiWorker(String url, JTextArea infoTextArea, String hostName) {
 		this.url = url;
 		this.infoTextArea = infoTextArea;
 		this.container = null;
+		this.hostName = hostName;
 	}
 
 	@Override

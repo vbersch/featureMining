@@ -1,10 +1,14 @@
-package featureMining;
+package featureMining.main;
 
 import javax.swing.SwingUtilities;
 
-import featureMining.processing.HtmlProcessor;
-import featureMining.processing.SimpleProcessor;
+import featureMining.feature.FeatureContainer;
+import featureMining.preprocessing.IDocumentPreprocessor;
+import featureMining.preprocessing.html.HtmlPreprocessor;
+import featureMining.processing.DocumentProcessor;
+import featureMining.processing.ISimpleProcessor;
 import featureMining.ui.RootFeatureWindow;
+import gate.Corpus;
 import gate.Gate;
 import gate.util.GateException;
 
@@ -19,7 +23,9 @@ public class FeatureMining {//Singleton
 public static int maxThreads = 4;
 	
 	/** The document processor. */
-	private SimpleProcessor documentProcessor;
+	private DocumentProcessor documentProcessor;
+	
+	private IDocumentPreprocessor documentPreprocessor;
 	
 	/** The root window. */
 	private RootFeatureWindow rootWindow;
@@ -52,11 +58,12 @@ public static int maxThreads = 4;
 	private void go(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
-		    	rootWindow = new RootFeatureWindow();
+		    	rootWindow = new RootFeatureWindow(); //create the GUI and wait for input
 		    }
 		});
 		
-		documentProcessor = new HtmlProcessor();
+		documentPreprocessor = new HtmlPreprocessor();
+		documentProcessor = new DocumentProcessor();
 	}
 	
 	/**
@@ -90,8 +97,23 @@ public static int maxThreads = 4;
 	 *
 	 * @return the document processor
 	 */
-	public SimpleProcessor getDocumentProcessor() {
+	public DocumentProcessor getDocumentProcessor() {
 		return this.documentProcessor;
+	}
+
+	public IDocumentPreprocessor getDocumentPreprocessor() {
+		return documentPreprocessor;
+	}
+
+	public FeatureContainer doProcessing(String url, String hostName) {
+		
+		FeatureContainer featureContainer = new FeatureContainer();
+		this.documentPreprocessor = new HtmlPreprocessor();
+		Corpus corpus = this.documentPreprocessor.createAnnotatedCorpus(url, hostName);
+		documentProcessor = new DocumentProcessor();
+		documentProcessor.processCorpus(featureContainer, corpus);
+		
+		return featureContainer;
 	}
 	
 }

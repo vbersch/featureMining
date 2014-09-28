@@ -1,4 +1,4 @@
-package featureMining.processing;
+package featureMining.preprocessing.html;
 
 import gate.Annotation;
 import gate.AnnotationSet;

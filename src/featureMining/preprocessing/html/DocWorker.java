@@ -1,6 +1,6 @@
-package featureMining;
+package featureMining.preprocessing.html;
 
-import featureMining.processing.HtmlProcessor;
+import featureMining.main.FeatureMining;
 import gate.Document;
 import gate.Factory;
 import gate.FeatureMap;
@@ -51,7 +51,7 @@ public class DocWorker extends Thread {
     @Override
     public void run() {
     	
-    	String url = ((HtmlProcessor)FeatureMining.getSingleton().getDocumentProcessor()).getNextLink();
+    	String url = ((HtmlPreprocessor)FeatureMining.getSingleton().getDocumentPreprocessor()).getNextLink();
     	while(url != null){
     		HttpGet httpget = new HttpGet(url);
     		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nThread " + this.id + ": getting " + url);
@@ -73,7 +73,7 @@ public class DocWorker extends Thread {
 					doc.setName(url);
 	                
 					//add document to the corpus 
-					FeatureMining.getSingleton().getDocumentProcessor().addDocument(doc);
+					((HtmlPreprocessor)FeatureMining.getSingleton().getDocumentPreprocessor()).addDocument(doc);
 	            } catch (ResourceInstantiationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -85,7 +85,7 @@ public class DocWorker extends Thread {
 	        } catch (IOException ex) {
 	            // Handle I/O errors
 	        }
-	        url = ((HtmlProcessor)FeatureMining.getSingleton().getDocumentProcessor()).getNextLink();
+	        url = ((HtmlPreprocessor)FeatureMining.getSingleton().getDocumentPreprocessor()).getNextLink();
     	}
     }
 	

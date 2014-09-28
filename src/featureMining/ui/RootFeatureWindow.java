@@ -6,14 +6,15 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -29,11 +30,10 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 
-import featureMining.FeatureMining;
-import featureMining.processing.feature.FeatureContainer;
-import featureMining.ui.listeners.GuiListener;
+import featureMining.feature.Feature;
+import featureMining.feature.FeatureContainer;
+import featureMining.ui.listener.GuiListener;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -55,17 +55,17 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	/** The feature list. */
 	private JList featureList;
 
-	/** The info pane. */
-	private JScrollPane infoPane;
-
-	/** The desc pane. */
-	private JScrollPane descPane;
-
 	/** The info text area. */
 	private JTextArea infoTextArea;
 
 	/** The desc text area. */
 	private JTextArea descTextArea;
+	
+	private JTextField newNameField;
+	
+	public JTextField getNewNameField() {
+		return newNameField;
+	}
 
 	/**
 	 * Gets the feature container.
@@ -84,6 +84,11 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 	/** The gui listener. */
 	private GuiListener guiListener;
+
+	private int featureFound;
+	private int currentFeatureNum;
+
+	private JTextArea evalTextArea;
 
 	/**
 	 * Instantiates a new root feature window.
@@ -147,11 +152,13 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		
 		JTabbedPane infoTabs = new JTabbedPane();
 
-		this.infoPane = createInfoTextArea("Info");
-		this.descPane = createDescTextArea("Description");
+		JScrollPane infoPane = createInfoTextArea("Info");
+		JScrollPane descPane = createDescTextArea("Description");
+		JScrollPane evalPane = createEvalTextArea("Evaluation");
 
 		infoTabs.addTab("Info", infoPane);
 		infoTabs.addTab("Description", descPane);
+		infoTabs.addTab("Evaluation", evalPane);
 		
 		listScrollPane.setPreferredSize(new Dimension(250 , 200));
 		infoTabs.setMinimumSize(new Dimension(300 , 200));
@@ -168,24 +175,57 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 	}
 
+	public JTextArea getEvalTextArea() {
+		return evalTextArea;
+	}
+
+	private JScrollPane createEvalTextArea(String text) {
+		this.evalTextArea = new JTextArea();
+		evalTextArea.setEditable(false);
+		evalTextArea.setText(text);
+
+		JScrollPane scrollPane = new JScrollPane(evalTextArea,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+		return scrollPane;
+	}
+
+	public int getFeatureFound() {
+		return featureFound;
+	}
+
+	public void setFeatureFound(int featureFound) {
+		this.featureFound = featureFound;
+	}
+
+	public int getCurrentFeatureNum() {
+		return currentFeatureNum;
+	}
+
+	public void setCurrentFeatureNum(int currentFeatureNum) {
+		this.currentFeatureNum = currentFeatureNum;
+	}
+
 	private JPanel createEditBox() {
 		JPanel editBox = new JPanel(new BorderLayout());
 		//editBox.setMaximumSize(new Dimension(50,50));
 		
 		JButton changeButton = new JButton("Change");
+		changeButton.addActionListener(guiListener);
+		changeButton.setName("changeButton");
+		
 		JButton deleteButton = new JButton("Delete Feature");
-		
-		
 		deleteButton.setBackground(Color.RED);
 		deleteButton.addActionListener(guiListener);
-		deleteButton.setName("delete");
+		deleteButton.setName("deleteButton");
 		
-		JTextField textField = new JTextField(10);
-		textField.setText("Enter new Name");
+		newNameField = new JTextField(10);
+		newNameField.setText("Enter new Name");
 		
 		JPanel buttonPane = new JPanel();
 		buttonPane.setLayout(new BoxLayout(buttonPane , BoxLayout.LINE_AXIS));
-		buttonPane.add(textField);
+		buttonPane.add(newNameField);
 		buttonPane.add(Box.createHorizontalStrut(5));
 		buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
 		buttonPane.add(Box.createHorizontalStrut(5));
@@ -288,7 +328,7 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e){
-		UiWorker uiWorker = new UiWorker(urlField.getText(), infoTextArea);
+		UiWorker uiWorker = new UiWorker(urlField.getText(), infoTextArea, "");
 		uiWorker.execute();
 	}
 
@@ -301,15 +341,14 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	public void setContent(FeatureContainer featureContainer) {
 		this.featureContainer = featureContainer;
 
-		DefaultListModel model = (DefaultListModel) this.featureList.getModel();
-		for (String key : featureContainer.getFeatureStorage().keySet()) {
-			model.addElement(key);
-		}
+		this.updateFeatureList();
 		
+		this.featureFound = featureContainer.getFeatureStorage().size();
+		this.currentFeatureNum = this.featureFound;
 		int linkNum = featureContainer.getLinkNum();
 		
 		String text = "Found "
-				+ this.featureContainer.getFeatureStorage().size()
+				+ featureFound
 				+ " Features";
 		if(linkNum > 0){
 			text += "\nParsed " + linkNum + " Links";
@@ -370,8 +409,22 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	public void updateFeatureList() {
 		DefaultListModel model = (DefaultListModel) this.featureList.getModel();
 		model.clear();
-		for (String key : featureContainer.getFeatureStorage().keySet()) {
-			model.addElement(key);
+		
+		List<Feature> sortedFeatures = new ArrayList<Feature>(featureContainer.getFeatureStorage().values());
+		Collections.sort(sortedFeatures);
+		
+		for (Feature feature : sortedFeatures) {
+			model.addElement(feature.getName());
 		}
+	}
+
+	public void updateEvalTextArea() {
+		this.currentFeatureNum--;
+		float prec = (float)currentFeatureNum/(float)featureFound;
+		String text = "";
+		text += currentFeatureNum + " of " + this.featureFound + " correctly found";
+		text += "\nPrecision: " + prec;
+		evalTextArea.setText(text);
+		
 	}
 }

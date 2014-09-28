@@ -1,4 +1,4 @@
-package featureMining.ui.listeners;
+package featureMining.ui.listener;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -6,10 +6,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import featureMining.FeatureMining;
+import featureMining.main.FeatureMining;
 import featureMining.ui.RootFeatureWindow;
 
 // TODO: Auto-generated Javadoc
@@ -37,13 +38,37 @@ public class GuiListener implements ActionListener, ListSelectionListener{
 			if(item.getName().equals("exit")){
 				System.exit(0);
 			}
-		}else if(e.getSource() instanceof JButton){ //delete an item
+		}else if(e.getSource() instanceof JButton){
+			JButton button = (JButton)e.getSource();
 			JList list = rootWindow.getFeatureList();
-			if(list.getSelectedIndex() != -1){
-				rootWindow.getInfoTextArea().setText("Feature " + (String) list.getSelectedValue() + " successfully deleted");
-				rootWindow.getDescTextArea().setText("");
-				rootWindow.getFeatureContainer().deleteFeature((String) list.getSelectedValue());
-				rootWindow.updateFeatureList();
+			if(button.getName() == "deleteButton"){ // delete Feature
+				if(list.getSelectedIndex() != -1){
+					rootWindow.getInfoTextArea().setText("Feature " + (String) list.getSelectedValue() + " successfully deleted");
+					rootWindow.getDescTextArea().setText("");
+					rootWindow.getFeatureContainer().deleteFeature((String) list.getSelectedValue());
+					rootWindow.updateFeatureList();
+					rootWindow.updateEvalTextArea();
+				}
+			}else if(button.getName() == "changeButton"){
+				if(list.getSelectedIndex() != -1){
+					String oldName = (String) list.getSelectedValue();
+					String newName = rootWindow.getNewNameField().getText();
+					Object[] options = {"Accept", "Cancel"};
+					int n = JOptionPane.showOptionDialog(rootWindow,
+						    "Change " + oldName + " to " + newName + "?",
+						    "Rename Feature",
+						    JOptionPane.YES_NO_OPTION,
+						    JOptionPane.QUESTION_MESSAGE,
+						    null,
+						    options,
+						    options[1]);
+					if(n == 0){
+						rootWindow.getNewNameField().setText("Enter new Name");
+						rootWindow.getInfoTextArea().setText("Feature " + oldName + " successfully change to " + newName);
+						rootWindow.getFeatureContainer().changeFeature(oldName , newName);
+						rootWindow.updateFeatureList();
+					}
+				}
 			}
 		}
 	}

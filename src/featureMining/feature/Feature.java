@@ -1,4 +1,4 @@
-package featureMining.processing.feature;
+package featureMining.feature;
 
 import java.util.ArrayList;
 
@@ -6,11 +6,13 @@ import java.util.ArrayList;
 /**
  * The Class Feature.
  */
-public class Feature {
+public class Feature implements Comparable{
 	
 	
 	/** The name. */
 	private String name;
+	
+	private String oldName;
 	
 	/** The occurence. */
 	private int occurence;
@@ -37,8 +39,13 @@ public class Feature {
 		this.singleWords = singleWords;
 		description = new ArrayList<String>();
 		description.add(wholeSentence);
+		oldName = null;
 	}
 	
+	public String getOldName() {
+		return oldName;
+	}
+
 	/**
 	 * Adds the.
 	 */
@@ -88,6 +95,22 @@ public class Feature {
 		if(!description.contains(wholeSentence)){
 			description.add(wholeSentence);
 		}
+	}
+
+	public void update(String newName) {
+		this.oldName = this.name;
+		this.name = newName;
+		this.singleWords.clear();
+		String[] words = newName.split(" ");
+		for(int i = 0; i < words.length; i++){
+			singleWords.add(words[i]);
+		}
+	}
+
+	@Override
+	public int compareTo(Object f) {
+		Feature feat = (Feature) f;
+		return feat.occurence - this.occurence;
 	}
 	
 }

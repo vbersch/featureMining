@@ -1,4 +1,4 @@
-package featureMining.processing.feature;
+package featureMining.feature;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +78,9 @@ public class FeatureContainer {
 		info += feature.getName();
 		info += "\n#occurrences: \t" + feature.getOccurence();
 		info += "\n#Found in: \t" + feature.getSourceName();
+		if(feature.getOldName() != null){
+			info += "\nold Name: " + feature.getOldName();
+		}
 		return info;
 	}
 	
@@ -98,6 +101,12 @@ public class FeatureContainer {
 
 	public void deleteFeature(String key) {
 		this.featureStorage.remove(key);
+	}
+
+	public void changeFeature(String oldName, String newName) {
+		Feature f = this.featureStorage.remove(oldName);
+		f.update(newName);
+		this.featureStorage.put(newName, f);
 	}
 	
 }
