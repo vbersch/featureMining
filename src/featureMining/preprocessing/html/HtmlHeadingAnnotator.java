@@ -35,6 +35,7 @@ public class HtmlHeadingAnnotator {
 	
 	public void annotateCorpus(Corpus corpus, String baseDoc){
 		
+		System.out.println("General Html Heading Annotator started...");
 		for(Document doc : corpus){
 			if(doc.getName() == baseDoc){
 				this.mainDoc = doc;
@@ -45,12 +46,11 @@ public class HtmlHeadingAnnotator {
 		System.out.println("Building Document Hierarchy done");
 	}
 	
-	private boolean isValidTag(Annotation annot){
+	public boolean isValidTag(Annotation annot){
 		return this.validTags.containsKey(annot.getType());
 	}
 	
-	
-	private void buildHeadingHierarchy(Document doc) {
+	public void buildHeadingHierarchy(Document doc) {
 		AnnotationSet origAnnots = doc.getAnnotations("Original markups");
 		List sortedAnnots = new ArrayList(origAnnots);
 		
@@ -63,6 +63,11 @@ public class HtmlHeadingAnnotator {
 				gate.Utils.addAnn(origAnnots, annot.getStartNode().getOffset(), annot.getEndNode().getOffset(), "heading", map);
 			}
 		}
+		addContentAnnotations(doc, origAnnots);
+	}
+
+	
+	public void addContentAnnotations(Document doc , AnnotationSet origAnnots){
 		AnnotationSet headings = origAnnots.get("heading");
 		List sortedHeadings = new ArrayList(headings);
 		
@@ -84,7 +89,6 @@ public class HtmlHeadingAnnotator {
 			}
 		}
 	}
-
 
 	private String compareTags(String newTag, String type) {
 		if(validTags.get(newTag) > validTags.get(type)){

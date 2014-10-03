@@ -6,6 +6,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 
 import featureMining.feature.FeatureContainer;
+import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
 
 public class UiWorker extends SwingWorker<FeatureContainer, String> {

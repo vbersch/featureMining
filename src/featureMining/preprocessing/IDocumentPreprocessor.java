@@ -1,6 +1,6 @@
 package featureMining.preprocessing;
 
-import featureMining.ui.OptionTransferObject;
+import featureMining.feature.OptionTransferObject;
 import gate.Corpus;
 
 public interface IDocumentPreprocessor {

@@ -14,9 +14,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
 import featureMining.preprocessing.IDocumentPreprocessor;
-import featureMining.ui.OptionTransferObject;
 import gate.Corpus;
 import gate.Document;
 import gate.creole.ResourceInstantiationException;
@@ -51,7 +51,13 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 		String html = getHTML(baseUrl);
 		this.getContentFromBaseUrl(html);
 		
-		this.headingAnnotator = new HtmlHeadingAnnotator();
+		if(optionsTO.getDocumentationType() == "General"){
+			this.headingAnnotator = new HtmlHeadingAnnotator();
+		}else if(optionsTO.getDocumentationType() == "Mixxx"){
+			this.headingAnnotator = new MixxxHeadingAnnotator();
+		}else if(optionsTO.getDocumentationType() == "Github"){
+			this.headingAnnotator = new GithubHeadingAnnotator();
+		}
 		this.headingAnnotator.annotateCorpus(this.corpus, this.baseUrl);
 		
 		return this.corpus;

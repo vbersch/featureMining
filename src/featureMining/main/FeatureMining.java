@@ -3,10 +3,10 @@ package featureMining.main;
 import javax.swing.SwingUtilities;
 
 import featureMining.feature.FeatureContainer;
+import featureMining.feature.OptionTransferObject;
 import featureMining.preprocessing.IDocumentPreprocessor;
 import featureMining.preprocessing.html.HtmlPreprocessor;
 import featureMining.processing.DocumentProcessor;
-import featureMining.ui.OptionTransferObject;
 import featureMining.ui.RootFeatureWindow;
 import gate.Corpus;
 import gate.Gate;
@@ -63,9 +63,6 @@ public class FeatureMining {//Singleton
 		    	rootWindow = new RootFeatureWindow(); //create the GUI and wait for input
 		    }
 		});
-		
-		documentPreprocessor = new HtmlPreprocessor();
-		documentProcessor = new DocumentProcessor();
 	}
 	
 	/**
@@ -109,16 +106,18 @@ public class FeatureMining {//Singleton
 
 	public FeatureContainer doProcessing(OptionTransferObject optionsTO) {
 		
-		FeatureContainer featureContainer = new FeatureContainer();
-		
-		if(optionsTO.getPreprocessingName() == "HTML"){
+		FeatureContainer featureContainer = new FeatureContainer(); 
+		if(optionsTO.getPreprocessingName().equals("Html")){
 			this.documentPreprocessor = new HtmlPreprocessor();
+		}else{
+			System.out.println("No other Preprocessors but HTML implemented yet...");
+			System.exit(0);
 		}
 		
 		maxThreads = optionsTO.getThreadNum();
 		
 		Corpus corpus = this.documentPreprocessor.createAnnotatedCorpus(optionsTO);
-		documentProcessor = new DocumentProcessor();
+		documentProcessor = new DocumentProcessor(optionsTO);
 		documentProcessor.processCorpus(featureContainer, corpus);
 		
 		return featureContainer;

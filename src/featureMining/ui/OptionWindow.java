@@ -31,6 +31,7 @@ public class OptionWindow extends JFrame {
 	private JTextField hostField;
 	private JComboBox preprocessingOptions;
 	private JComboBox htmlProcessingOptions;
+	private JComboBox domainProcessingOptions;
 	private JLabel hostLabel;
 	private JPanel labelPane;
 	private JPanel fieldPane;
@@ -40,6 +41,7 @@ public class OptionWindow extends JFrame {
 		return baseUrl;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public OptionWindow(String url){
 		this.baseUrl = url;
 		this.setSize(480 , 320);
@@ -64,6 +66,10 @@ public class OptionWindow extends JFrame {
 		
 		JLabel threadLabel = new JLabel("Number of Threads: ");
 		threadLabel.setMaximumSize(new Dimension(threadLabel.getPreferredSize()));
+		
+		JLabel domainLabel = new JLabel("Domain specific: ");
+		domainLabel.setToolTipText("Every Feature contains at least one Domain-specific Noun");
+		domainLabel.setMaximumSize(new Dimension(domainLabel.getPreferredSize()));
 		
 		htmlLabel = new JLabel("Documentation Format: ");
 		htmlLabel.setMaximumSize(new Dimension(htmlLabel.getPreferredSize()));
@@ -98,14 +104,23 @@ public class OptionWindow extends JFrame {
 		
 		String[] htmlOptions = {"General" , "Mixxx" , "Github"};
 		htmlProcessingOptions = new JComboBox(htmlOptions);
-		htmlProcessingOptions.setSelectedIndex(0);
+		htmlProcessingOptions.setName("preprocessingOptions");
+		htmlProcessingOptions.setSelectedIndex(1);
 		htmlProcessingOptions.setMaximumSize(new Dimension(Integer.MAX_VALUE, htmlProcessingOptions.getPreferredSize().height) );
 		((JLabel)htmlProcessingOptions.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
 		
+		String[] domainOptions = {"True" , "False"};
+		domainProcessingOptions = new JComboBox(domainOptions);
+		domainProcessingOptions.setSelectedIndex(0);
+		domainProcessingOptions.setMaximumSize(new Dimension(Integer.MAX_VALUE, domainProcessingOptions.getPreferredSize().height) );
+		((JLabel)domainProcessingOptions.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
+		
 		labelPane.add(threadLabel);
+		labelPane.add(domainLabel);
 		labelPane.add(preprocessingLabel);
 		
 		fieldPane.add(threadField);
+		fieldPane.add(domainProcessingOptions);
 		fieldPane.add(preprocessingOptions);
 		
 		fieldPane.setPreferredSize(new Dimension(labelPane.getPreferredSize().width + 80  ,labelPane.getPreferredSize().height));
@@ -154,7 +169,11 @@ public class OptionWindow extends JFrame {
 	public String getPreprocessor() {
 		return (String)preprocessingOptions.getSelectedItem();
 	}
-
+	
+	public String getDomainOptions(){
+		return (String)domainProcessingOptions.getSelectedItem();
+	}
+	
 	public String getHostName() {
 		return hostField.getText();
 	}
@@ -171,7 +190,6 @@ public class OptionWindow extends JFrame {
 	}
 
 	public void removeHtmlOptions() {
-		//fieldPane.setPreferredSize(new Dimension(hostField.getPreferredSize().width , fieldPane.getPreferredSize().height));
 		
 		labelPane.remove(hostLabel);
 		fieldPane.remove(htmlProcessingOptions);

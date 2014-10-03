@@ -14,8 +14,8 @@ import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
-import featureMining.ui.OptionTransferObject;
 import featureMining.ui.OptionWindow;
 import featureMining.ui.RootFeatureWindow;
 import featureMining.ui.UiWorker;
@@ -82,6 +82,7 @@ public class GuiListener implements ActionListener, ListSelectionListener, ItemL
 				OptionWindow optionWindow = rootWindow.getOptionFrame();
 				OptionTransferObject optionsTO = new OptionTransferObject(optionWindow.getBaseUrl(), optionWindow.getHostName(),
 						optionWindow.getPreprocessor(), optionWindow.getThreadNum(), optionWindow.getDocumentationType());
+				optionsTO.setDomainSpecific(optionWindow.getDomainOptions());
 				UiWorker uiWorker = new UiWorker(rootWindow.getInfoTextArea(), optionsTO);
 				uiWorker.execute();
 				optionWindow.dispose();
@@ -106,12 +107,14 @@ public class GuiListener implements ActionListener, ListSelectionListener, ItemL
 	@Override
 	public void itemStateChanged(ItemEvent evt) {
 		JComboBox comboBox = (JComboBox)evt.getSource();
-		RootFeatureWindow rootWindow = FeatureMining.getSingleton().getRootWindow();
-		if (evt.getStateChange() == ItemEvent.SELECTED){
-			if((String)comboBox.getSelectedItem() == "Html"){
-				rootWindow.getOptionFrame().addHtmlOptions();
-			}else{
-				rootWindow.getOptionFrame().removeHtmlOptions();
+		if(comboBox.getName().equals("preprocessorOptions")){
+			RootFeatureWindow rootWindow = FeatureMining.getSingleton().getRootWindow();
+			if (evt.getStateChange() == ItemEvent.SELECTED){
+				if((String)comboBox.getSelectedItem() == "Html"){
+					rootWindow.getOptionFrame().addHtmlOptions();
+				}else{
+					rootWindow.getOptionFrame().removeHtmlOptions();
+				}
 			}
 		}
 	}
