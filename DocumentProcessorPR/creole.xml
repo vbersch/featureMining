@@ -1,0 +1,27 @@
+<!-- creole.xml DocumentProcessorPR -->
+<!--  test, 3/10/2014 -->
+
+<!--
+This file just references the JAR file that contains the compiled resource.
+Configuration is contained in the @CreoleResource annotation on 
+featureMining.processing.pr.DocumentProcessorPR.
+-->
+
+<CREOLE-DIRECTORY>
+	<CREOLE>
+		<RESOURCE>
+			<JAR>DocumentProcessorPR.jar</JAR>
+			<CLASS>featureMining.processing.pr.DocumentProcessorPR</CLASS>
+			<PARAMETER NAME="document"
+			COMMENT="The document to analyse"
+			RUNTIME="true">gate.Document</PARAMETER>
+			
+			<PARAMETER NAME="corpus"
+			COMMENT="The document to analyse"
+			RUNTIME="true">gate.Corpus</PARAMETER>
+		  
+			<PARAMETER NAME="featureContainer"
+			COMMENT="test">featureMining.feature.FeatureContainer</PARAMETER>
+		</RESOURCE>
+	</CREOLE>
+</CREOLE-DIRECTORY>

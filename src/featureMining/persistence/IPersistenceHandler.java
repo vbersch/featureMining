@@ -1,4 +1,4 @@
-package featureMining.persistence.xml;
+package featureMining.persistence;
 
 import featureMining.feature.FeatureContainer;
 

@@ -4,18 +4,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 
 import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
+import featureMining.persistence.xml.XmlHandler;
 import featureMining.ui.OptionWindow;
 import featureMining.ui.RootFeatureWindow;
 import featureMining.ui.UiWorker;
@@ -37,6 +40,7 @@ public class GuiListener implements ActionListener, ListSelectionListener, ItemL
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		RootFeatureWindow rootWindow = FeatureMining.getSingleton().getRootWindow(); 
@@ -44,6 +48,24 @@ public class GuiListener implements ActionListener, ListSelectionListener, ItemL
 			JMenuItem item = (JMenuItem)e.getSource();
 			if(item.getName().equals("exit")){
 				System.exit(0);
+			}else if(item.getName().equals("exportXml")){
+				rootWindow.setPersistenceHandler(XmlHandler.getSingleton());
+				if(rootWindow.getFeatureContainer() != null){
+					String path = this.showFileDialog();
+					if(path != null){
+						rootWindow.getPersistenceHandler().persist(path, rootWindow.getFeatureContainer());
+					}
+				}
+			}else if(item.getName().equals("importXml")){
+				rootWindow.setPersistenceHandler(XmlHandler.getSingleton());
+				String path = this.showFileDialog();
+				if(path != null){
+					if(path.endsWith(".xml")){
+						rootWindow.getPersistenceHandler().load(path);
+					}else{
+						rootWindow.addInfoTextLine("\nThats not an xml File!");
+					}
+				}
 			}
 		}else if(e.getSource() instanceof JButton){
 			JButton button = (JButton)e.getSource();
@@ -88,6 +110,44 @@ public class GuiListener implements ActionListener, ListSelectionListener, ItemL
 				optionWindow.dispose();
 			}
 		}
+	}
+
+	private String showFileDialog() {
+		RootFeatureWindow rootWindow = FeatureMining.getSingleton().getRootWindow(); 
+		final JFileChooser fc = new JFileChooser();
+		fc.setCurrentDirectory(new File(System.getProperty("user.dir") + "/xml"));
+		fc.setApproveButtonText("Choose"); 
+		fc.setFileFilter(new FileFilter(){
+			@Override
+			public boolean accept(File f) {
+				if (f.isDirectory()) {
+			        return true;
+			    }
+				String ext = null;
+		        String s = f.getName();
+		        int i = s.lastIndexOf('.');
+
+		        if (i > 0 &&  i < s.length() - 1) {
+		            ext = s.substring(i+1).toLowerCase();
+		        }
+		        if(ext != null){
+			        if(ext.equals("xml")){
+			        	return true;
+			        }
+		        }
+				
+				return false;
+			}
+			@Override
+			public String getDescription() {
+				return "*.xml";
+			}
+		});
+		int ret = fc.showOpenDialog(null);
+		if(ret == JFileChooser.APPROVE_OPTION){
+			return fc.getSelectedFile().getAbsolutePath();
+		}
+		return null;
 	}
 
 	/* (non-Javadoc)

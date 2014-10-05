@@ -15,7 +15,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -34,8 +33,7 @@ import javax.swing.SwingUtilities;
 
 import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
-import featureMining.persistence.xml.IPersistenceHandler;
-import featureMining.persistence.xml.XmlHandler;
+import featureMining.persistence.IPersistenceHandler;
 import featureMining.ui.listener.GuiListener;
 
 // TODO: Auto-generated Javadoc
@@ -172,7 +170,15 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		mainContainer.add(buttonPane, BorderLayout.PAGE_END);
 
 		this.createMenu();
+		
+	}
 
+	public IPersistenceHandler getPersistenceHandler() {
+		return persistenceHandler;
+	}
+
+	public void setPersistenceHandler(IPersistenceHandler persistenceHandler) {
+		this.persistenceHandler = persistenceHandler;
 	}
 
 	public JTextArea getEvalTextArea() {

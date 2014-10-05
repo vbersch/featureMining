@@ -161,7 +161,6 @@ public class DocumentProcessor implements ISimpleProcessor{
 			System.out.print("\n\t* Loading " + processingResource[pr]
 					+ " ... ");
 			
-			//res.getFeatures().put("featureContainer", "test");
 			LanguageAnalyser res = null;
 			if(processingResource[pr].equals("featureMining.processing.pr.DocumentProcessorPR")){	
 				FeatureMap map = Factory.newFeatureMap();

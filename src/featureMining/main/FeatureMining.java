@@ -87,6 +87,7 @@ public class FeatureMining {//Singleton
 		
 		try {
 			Gate.init();
+			System.out.println("register directory: " + new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURL());
 			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURL());
 
 		} catch (GateException e1) {

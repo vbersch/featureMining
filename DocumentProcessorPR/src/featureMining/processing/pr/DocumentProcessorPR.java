@@ -54,7 +54,6 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 	
 
 	public Resource init() throws ResourceInstantiationException {
-		System.out.println("init: " + featureContainer.getLinkNum());
 		docNum = featureContainer.getLinkNum();
 		currentDoc = 0;
 		return this;

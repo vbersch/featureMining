@@ -18,7 +18,7 @@ public class Feature implements Comparable, Serializable{
 	private String oldName;
 	
 	/** The occurence. */
-	private int occurence;
+	private int occurrence;
 	
 	/** The synonyms. */
 	private ArrayList<String> synonyms;
@@ -36,7 +36,7 @@ public class Feature implements Comparable, Serializable{
 	 */
 	public Feature(String name, String sourceName, ArrayList<String> singleWords, String wholeSentence){
 		this.name = name;
-		occurence = 1;
+		occurrence = 1;
 		synonyms = null;
 		this.sourceName = sourceName;
 		this.singleWords = singleWords;
@@ -45,15 +45,30 @@ public class Feature implements Comparable, Serializable{
 		oldName = null;
 	}
 	
+	public ArrayList<String> getSingleWords() {
+		return singleWords;
+	}
+
 	public String getOldName() {
 		return oldName;
 	}
+	
+	public void setOccurrence(int occurence) {
+		this.occurrence = occurence;
+	}
 
+	public void setDescription(ArrayList<String> description) {
+		this.description = description;
+	}
+
+	public void setOldName(String oldName) {
+		this.oldName = oldName;
+	}
 	/**
 	 * Adds the.
 	 */
 	public void add(String wholeSentence){
-		occurence++;
+		occurrence++;
 		if(!description.contains(wholeSentence)){
 			description.add(wholeSentence);
 		}
@@ -81,8 +96,8 @@ public class Feature implements Comparable, Serializable{
 	 *
 	 * @return the occurence
 	 */
-	public int getOccurence() {
-		return occurence;
+	public int getOccurrence() {
+		return occurrence;
 	}
 
 	/**
@@ -98,6 +113,7 @@ public class Feature implements Comparable, Serializable{
 		if(!description.contains(wholeSentence)){
 			description.add(wholeSentence);
 		}
+		this.occurrence++;
 	}
 
 	public void update(String newName) {
@@ -113,7 +129,7 @@ public class Feature implements Comparable, Serializable{
 	@Override
 	public int compareTo(Object f) {
 		Feature feat = (Feature) f;
-		return feat.occurence - this.occurence;
+		return feat.occurrence - this.occurrence;
 	}
 	
 }

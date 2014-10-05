@@ -85,7 +85,7 @@ public class FeatureContainer implements Serializable{
 		String info = "";
 		Feature feature = this.featureStorage.get(key);
 		info += feature.getName();
-		info += "\n#occurrences: \t" + feature.getOccurence();
+		info += "\n#occurrences: \t" + feature.getOccurrence();
 		info += "\n#Found in: \t" + feature.getSourceName();
 		if(feature.getOldName() != null){
 			info += "\nold Name: " + feature.getOldName();
