@@ -22,27 +22,23 @@ import org.apache.http.protocol.HttpContext;
 /**
  * The Class DocWorker.
  */
-public class DocWorker extends Thread {
+public class DocWorker implements Runnable {
 
 	/** The http client. */
 	private final CloseableHttpClient httpClient;
     
     /** The context. */
     private final HttpContext context;
-    
-    /** The id. */
-    private final int id;
-    
+        
     /**
      * Instantiates a new doc worker.
      *
      * @param httpClient the http client
      * @param id the id
      */
-    public DocWorker(CloseableHttpClient httpClient, int id) {
+    public DocWorker(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
         this.context = HttpClientContext.create();
-        this.id = id;
     }
     
     /* (non-Javadoc)
@@ -54,9 +50,10 @@ public class DocWorker extends Thread {
     	String url = ((HtmlPreprocessor)FeatureMining.getSingleton().getDocumentPreprocessor()).getNextLink();
     	while(url != null){
     		HttpGet httpget = new HttpGet(url);
-    		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nThread " + this.id + ": getting " + url);
-    		System.out.println("Thread " + this.id + ": getting " + url);
-	        try {
+    		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nThread " + String.valueOf((Thread.currentThread().getId()%FeatureMining.maxThreads+1)) + ": getting " + url);
+    		System.out.println("Thread " + String.valueOf((Thread.currentThread().getId()%FeatureMining.maxThreads+1)) + ": getting " + url);
+	        
+    		try {
 	            CloseableHttpResponse response = httpClient.execute(httpget, context);
 	            try {
 	                HttpEntity entity = response.getEntity();

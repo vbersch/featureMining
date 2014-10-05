@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,23 +105,25 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
 		CloseableHttpClient httpClient = HttpClients.custom()
 				.setConnectionManager(cm).build();
-
-		DocWorker[] threads = new DocWorker[FeatureMining.maxThreads];
+		
+		ArrayList<Thread> threads = new ArrayList<Thread>();
 
 		// init threads
-		for (int i = 0; i < threads.length; i++) {
-			threads[i] = new DocWorker(httpClient, i + 1);
+		Runnable run = new DocWorker(httpClient);
+		for (int i = 0; i < FeatureMining.maxThreads; i++) {
+			threads.add(new Thread(run));
+		//	threads[i] = new DocWorker(httpClient, i + 1);
 		}
 
 		// start the threads
-		for (int j = 0; j < threads.length; j++) {
-			threads[j].start();
+		for (int j = 0; j < threads.size(); j++) {
+			threads.get(j).start();
 		}
 
 		// join the threads
-		for (int j = 0; j < threads.length; j++) {
+		for (int j = 0; j < threads.size(); j++) {
 			try {
-				threads[j].join();
+				threads.get(j).join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
