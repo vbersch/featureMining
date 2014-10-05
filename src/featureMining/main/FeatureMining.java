@@ -1,5 +1,8 @@
 package featureMining.main;
 
+import java.io.File;
+import java.net.MalformedURLException;
+
 import javax.swing.SwingUtilities;
 
 import featureMining.feature.FeatureContainer;
@@ -79,12 +82,17 @@ public class FeatureMining {//Singleton
 	 *
 	 * @param args the arguments
 	 */
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) {
 		
 		try {
 			Gate.init();
+			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURL());
+
 		} catch (GateException e1) {
 			e1.printStackTrace();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
 		}
 		
 		FeatureMining mainApp = getSingleton();
@@ -125,7 +133,6 @@ public class FeatureMining {//Singleton
 
 	public void setThreadNum(int threadNum) {
 		maxThreads = threadNum; 
-		
 	}
 
 	public void setPreprocessor(String preprocessor) {

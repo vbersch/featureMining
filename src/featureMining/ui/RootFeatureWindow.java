@@ -34,6 +34,8 @@ import javax.swing.SwingUtilities;
 
 import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
+import featureMining.persistence.xml.IPersistenceHandler;
+import featureMining.persistence.xml.XmlHandler;
 import featureMining.ui.listener.GuiListener;
 
 // TODO: Auto-generated Javadoc
@@ -92,7 +94,8 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	private int currentFeatureNum;
 
 	private JTextArea evalTextArea;
-
+	private IPersistenceHandler persistenceHandler;
+	
 	/**
 	 * Instantiates a new root feature window.
 	 */
@@ -111,15 +114,9 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 		featureList = new JList(listModel);
 		featureList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		// list.setSelectedIndex(0);
 		featureList.setVisibleRowCount(5);
 		JScrollPane listScrollPane = new JScrollPane(featureList);
 		featureList.addListSelectionListener(guiListener);
-
-//		JList list2 = new JList(listModel2);
-//		list2.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//		list2.setVisibleRowCount(5);
-//		JScrollPane listScrollPane2 = new JScrollPane(list2);
 
 		JButton fireButton = new JButton("mine URL");
 		fireButton.setEnabled(true);
@@ -287,14 +284,35 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		// create the Menu
 		menuBar = new JMenuBar();
 		JMenu menu = new JMenu("Options");
-		JMenuItem xmlExport = new JMenuItem("Export to XML");
 		JMenuItem urlsList = new JMenuItem("Get Urls from List");
 		JMenuItem exit = new JMenuItem("Exit");
 		exit.addActionListener(guiListener);
 		exit.setName("exit");
-
-		menu.add(xmlExport);
+		
+		JMenu exportMenu = new JMenu("Export");
+		JMenu importMenu = new JMenu("Import");
+		
+		JMenuItem exportXmlItem = new JMenuItem("to xml");
+		exportXmlItem.setName("exportXml");
+		exportXmlItem.addActionListener(guiListener);
+		
+		JMenuItem exportLuceneItem = new JMenuItem("to lucene");
+		exportMenu.add(exportXmlItem);
+		exportMenu.add(exportLuceneItem);
+		
+		JMenuItem importXmlItem = new JMenuItem("from xml");
+		importXmlItem.setName("importXml");
+		importXmlItem.addActionListener(guiListener);
+		
+		JMenuItem importLuceneItem = new JMenuItem("from lucene");
+		importMenu.add(importXmlItem);
+		importMenu.add(importLuceneItem);
+		
 		menu.add(urlsList);
+		menu.addSeparator();
+		menu.add(exportMenu);
+		menu.add(importMenu);
+		menu.addSeparator();
 		menu.add(exit);
 
 		JMenu helpMenu = new JMenu("Help");

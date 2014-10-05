@@ -45,8 +45,8 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 			e.printStackTrace();
 		}
 		
-		this.baseUrl 	= optionsTO.getBaseUrl();
-		this.hostName	= optionsTO.getHostName(); 
+		this.baseUrl = optionsTO.getBaseUrl();
+		this.hostName = optionsTO.getHostName(); 
 		
 		String html = getHTML(baseUrl);
 		this.getContentFromBaseUrl(html);
