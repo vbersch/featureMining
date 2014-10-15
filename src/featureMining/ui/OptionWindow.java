@@ -100,7 +100,7 @@ public class OptionWindow extends JFrame {
 		preprocessingOptions.setSelectedIndex(0);
 		preprocessingOptions.setMaximumSize(new Dimension(Integer.MAX_VALUE, preprocessingOptions.getPreferredSize().height) );
 		((JLabel)preprocessingOptions.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
-		preprocessingOptions.addItemListener(FeatureMining.getSingleton().getRootWindow().getGuiListener());
+		preprocessingOptions.addItemListener(FeatureMining.getSingleton().getRootWindow().getGuiItemListener());
 		
 		String[] htmlOptions = {"General" , "Mixxx" , "Github"};
 		htmlProcessingOptions = new JComboBox(htmlOptions);

@@ -34,7 +34,9 @@ import javax.swing.SwingUtilities;
 import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
 import featureMining.persistence.IPersistenceHandler;
-import featureMining.ui.listener.GuiListener;
+import featureMining.ui.listener.GuiActionListener;
+import featureMining.ui.listener.GuiItemListener;
+import featureMining.ui.listener.GuiListListener;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -85,8 +87,10 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	/** The menu bar. */
 	private JMenuBar menuBar;
 
-	/** The gui listener. */
-	private GuiListener guiListener;
+	/** The gui listeners. */
+	private GuiActionListener guiActionListener;
+	private GuiListListener guiListListener;
+	private GuiItemListener guiItemListener;
 
 	private int featureFound;
 	private int currentFeatureNum;
@@ -106,7 +110,9 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		this.setLocationRelativeTo(null);
 
 		mainContainer = new JPanel(new BorderLayout());
-		guiListener = new GuiListener();
+		guiActionListener = new GuiActionListener();
+		guiListListener = new GuiListListener();
+		guiItemListener = new GuiItemListener();
 
 		DefaultListModel listModel = new DefaultListModel();
 
@@ -114,7 +120,7 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		featureList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		featureList.setVisibleRowCount(5);
 		JScrollPane listScrollPane = new JScrollPane(featureList);
-		featureList.addListSelectionListener(guiListener);
+		featureList.addListSelectionListener(guiListListener);
 
 		JButton fireButton = new JButton("mine URL");
 		fireButton.setEnabled(true);
@@ -146,8 +152,6 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		listPane.add(editBox);
 		listPane.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 		
-		//listPane.setMaximumSize(new Dimension(1000,1000));
-		
 		JTabbedPane infoTabs = new JTabbedPane();
 
 		JScrollPane infoPane = createInfoTextArea("Info");
@@ -171,6 +175,14 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 		this.createMenu();
 		
+	}
+
+	public GuiListListener getGuiListListener() {
+		return guiListListener;
+	}
+
+	public GuiItemListener getGuiItemListener() {
+		return guiItemListener;
 	}
 
 	public IPersistenceHandler getPersistenceHandler() {
@@ -218,12 +230,12 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		//editBox.setMaximumSize(new Dimension(50,50));
 		
 		JButton changeButton = new JButton("Change");
-		changeButton.addActionListener(guiListener);
+		changeButton.addActionListener(guiActionListener);
 		changeButton.setName("changeButton");
 		
 		JButton deleteButton = new JButton("Delete Feature");
 		deleteButton.setBackground(Color.RED);
-		deleteButton.addActionListener(guiListener);
+		deleteButton.addActionListener(guiActionListener);
 		deleteButton.setName("deleteButton");
 		
 		newNameField = new JTextField(10);
@@ -292,7 +304,7 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		JMenu menu = new JMenu("Options");
 		JMenuItem urlsList = new JMenuItem("Get Urls from List");
 		JMenuItem exit = new JMenuItem("Exit");
-		exit.addActionListener(guiListener);
+		exit.addActionListener(guiActionListener);
 		exit.setName("exit");
 		
 		JMenu exportMenu = new JMenu("Export");
@@ -300,19 +312,33 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		
 		JMenuItem exportXmlItem = new JMenuItem("to xml");
 		exportXmlItem.setName("exportXml");
-		exportXmlItem.addActionListener(guiListener);
+		exportXmlItem.addActionListener(guiActionListener);
 		
 		JMenuItem exportLuceneItem = new JMenuItem("to lucene");
+		exportLuceneItem.setName("exportLucene");
+		exportLuceneItem.addActionListener(guiActionListener);
+		
+		JMenuItem exportSerialItem = new JMenuItem("to Serial Datastore");
+		exportSerialItem.setName("exportSerial");
+		exportSerialItem.addActionListener(guiActionListener);
+		
 		exportMenu.add(exportXmlItem);
 		exportMenu.add(exportLuceneItem);
+		exportMenu.add(exportSerialItem);
 		
 		JMenuItem importXmlItem = new JMenuItem("from xml");
 		importXmlItem.setName("importXml");
-		importXmlItem.addActionListener(guiListener);
+		importXmlItem.addActionListener(guiActionListener);
 		
 		JMenuItem importLuceneItem = new JMenuItem("from lucene");
+		
+		JMenuItem importSerialItem = new JMenuItem("from Serial Datastore");
+		importSerialItem.setName("importSerial");
+		importSerialItem.addActionListener(guiActionListener);
+		
 		importMenu.add(importXmlItem);
 		importMenu.add(importLuceneItem);
+		importMenu.add(importSerialItem);
 		
 		menu.add(urlsList);
 		menu.addSeparator();
@@ -362,8 +388,8 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		optionFrame = new OptionWindow(urlField.getText());
 	}
 	
-	public GuiListener getGuiListener() {
-		return guiListener;
+	public GuiActionListener getGuiListener() {
+		return guiActionListener;
 	}
 
 	public OptionWindow getOptionFrame() {

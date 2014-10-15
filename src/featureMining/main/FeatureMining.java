@@ -10,6 +10,7 @@ import featureMining.feature.OptionTransferObject;
 import featureMining.preprocessing.IDocumentPreprocessor;
 import featureMining.preprocessing.html.HtmlPreprocessor;
 import featureMining.processing.DocumentProcessor;
+import featureMining.processing.ISimpleProcessor;
 import featureMining.ui.RootFeatureWindow;
 import gate.Corpus;
 import gate.Gate;
@@ -22,18 +23,18 @@ import gate.util.GateException;
  */
 public class FeatureMining {//Singleton
 	
+	
+	private Corpus corpus;
 	/** The max threads. */
 	public static int maxThreads = 4;
 	
 	/** The document processor. */
-	private DocumentProcessor documentProcessor;
+	private ISimpleProcessor documentProcessor;
 	
 	private IDocumentPreprocessor documentPreprocessor;
 	
 	/** The root window. */
 	private RootFeatureWindow rootWindow;
-
-	private String preprocessorName;
 	
 	/** The instance. */
 	private static FeatureMining instance = null;
@@ -87,8 +88,8 @@ public class FeatureMining {//Singleton
 		
 		try {
 			Gate.init();
-			System.out.println("register directory: " + new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURL());
-			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURL());
+			System.out.println("register directory: " + new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURI().toURL());
+			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURI().toURL());
 
 		} catch (GateException e1) {
 			e1.printStackTrace();
@@ -105,7 +106,7 @@ public class FeatureMining {//Singleton
 	 *
 	 * @return the document processor
 	 */
-	public DocumentProcessor getDocumentProcessor() {
+	public ISimpleProcessor getDocumentProcessor() {
 		return this.documentProcessor;
 	}
 
@@ -125,9 +126,9 @@ public class FeatureMining {//Singleton
 		
 		maxThreads = optionsTO.getThreadNum();
 		
-		Corpus corpus = this.documentPreprocessor.createAnnotatedCorpus(optionsTO);
+		this.corpus = this.documentPreprocessor.createAnnotatedCorpus(optionsTO);
 		documentProcessor = new DocumentProcessor(optionsTO);
-		documentProcessor.processCorpus(featureContainer, corpus);
+		documentProcessor.processCorpus(featureContainer, this.corpus);
 		
 		return featureContainer;
 	}
@@ -136,8 +137,7 @@ public class FeatureMining {//Singleton
 		maxThreads = threadNum; 
 	}
 
-	public void setPreprocessor(String preprocessor) {
-		this.preprocessorName = preprocessor;
-	}
-	
+	public Corpus getCorpus() {
+		return corpus;
+	}	
 }

@@ -56,7 +56,6 @@ public class XmlHandler implements IPersistenceHandler{
 			rootWindow.setFeatureFound(Integer.parseInt(evalElement.getElementsByTagName("FeaturesFound").item(0).getTextContent()));
 			rootWindow.setContent(featureContainer);
 			
-			
 		}catch(Exception e){
 			e.printStackTrace();
 		}

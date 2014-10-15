@@ -42,14 +42,14 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 	@Override
 	public Corpus createAnnotatedCorpus(OptionTransferObject optionsTO) {
 		
+		this.baseUrl = optionsTO.getBaseUrl();
+		this.hostName = optionsTO.getHostName(); 
+		
 		try {
-			this.corpus = gate.Factory.newCorpus("testCorpus");
+			this.corpus = gate.Factory.newCorpus(this.baseUrl);
 		} catch (ResourceInstantiationException e) {
 			e.printStackTrace();
 		}
-		
-		this.baseUrl = optionsTO.getBaseUrl();
-		this.hostName = optionsTO.getHostName(); 
 		
 		String html = getHTML(baseUrl);
 		this.getContentFromBaseUrl(html);

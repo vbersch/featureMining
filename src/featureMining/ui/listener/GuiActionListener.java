@@ -18,6 +18,8 @@ import javax.swing.filechooser.FileFilter;
 
 import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
+import featureMining.persistence.datastore.LuceneDSHandler;
+import featureMining.persistence.datastore.SerialDSHandler;
 import featureMining.persistence.xml.XmlHandler;
 import featureMining.ui.OptionWindow;
 import featureMining.ui.RootFeatureWindow;
@@ -35,8 +37,7 @@ import featureMining.ui.UiWorker;
  *
  * @see GuiEvent
  */
-public class GuiListener implements ActionListener, ListSelectionListener, ItemListener{
-	
+public class GuiActionListener implements ActionListener{
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
@@ -51,20 +52,42 @@ public class GuiListener implements ActionListener, ListSelectionListener, ItemL
 			}else if(item.getName().equals("exportXml")){
 				rootWindow.setPersistenceHandler(XmlHandler.getSingleton());
 				if(rootWindow.getFeatureContainer() != null){
-					String path = this.showFileDialog();
+					String path = this.showFileDialog("xml" , "export");
+					if(path != null){
+						rootWindow.getPersistenceHandler().persist(path, rootWindow.getFeatureContainer());
+					}
+				}
+			}else if(item.getName().equals("exportLucene")){
+				rootWindow.setPersistenceHandler(LuceneDSHandler.getSingleton());
+				if(rootWindow.getFeatureContainer() != null){
+					String path = this.showFileDialog("luceneDataStores", "export");
+					if(path != null){
+						rootWindow.getPersistenceHandler().persist(path, rootWindow.getFeatureContainer());
+					}
+				}
+			}else if(item.getName().equals("exportSerial")){
+				rootWindow.setPersistenceHandler(SerialDSHandler.getSingleton());
+				if(rootWindow.getFeatureContainer() != null){
+					String path = this.showFileDialog("serialDataStores", "export");
 					if(path != null){
 						rootWindow.getPersistenceHandler().persist(path, rootWindow.getFeatureContainer());
 					}
 				}
 			}else if(item.getName().equals("importXml")){
 				rootWindow.setPersistenceHandler(XmlHandler.getSingleton());
-				String path = this.showFileDialog();
+				String path = this.showFileDialog("xml" , "import");
 				if(path != null){
 					if(path.endsWith(".xml")){
 						rootWindow.getPersistenceHandler().load(path);
 					}else{
 						rootWindow.addInfoTextLine("\nThats not an xml File!");
 					}
+				}
+			}else if(item.getName().equals("importSerial")){
+				rootWindow.setPersistenceHandler(SerialDSHandler.getSingleton());
+				String path = this.showFileDialog("serialDataStores", "export");
+				if(path != null){
+					rootWindow.getPersistenceHandler().load(path);
 				}
 			}
 		}else if(e.getSource() instanceof JButton){
@@ -112,71 +135,48 @@ public class GuiListener implements ActionListener, ListSelectionListener, ItemL
 		}
 	}
 
-	private String showFileDialog() {
+	private String showFileDialog(String dir, String mode) {
 		RootFeatureWindow rootWindow = FeatureMining.getSingleton().getRootWindow(); 
 		final JFileChooser fc = new JFileChooser();
-		fc.setCurrentDirectory(new File(System.getProperty("user.dir") + "/xml"));
+		fc.setCurrentDirectory(new File(System.getProperty("user.dir") + "/" + dir));
 		fc.setApproveButtonText("Choose"); 
-		fc.setFileFilter(new FileFilter(){
-			@Override
-			public boolean accept(File f) {
-				if (f.isDirectory()) {
-			        return true;
-			    }
-				String ext = null;
-		        String s = f.getName();
-		        int i = s.lastIndexOf('.');
-
-		        if (i > 0 &&  i < s.length() - 1) {
-		            ext = s.substring(i+1).toLowerCase();
-		        }
-		        if(ext != null){
-			        if(ext.equals("xml")){
-			        	return true;
+		if(dir.equals("luceneDataStores") || dir.equals("serialDataStores")){
+			if(mode.equals("export")){
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			}
+		}else if(dir.equals("xml")){
+			fc.setFileFilter(new FileFilter(){
+				@Override
+				public boolean accept(File f) {
+					if (f.isDirectory()) {
+				        return true;
+				    }
+					String ext = null;
+			        String s = f.getName();
+			        int i = s.lastIndexOf('.');
+	
+			        if (i > 0 &&  i < s.length() - 1) {
+			            ext = s.substring(i+1).toLowerCase();
 			        }
-		        }
-				
-				return false;
-			}
-			@Override
-			public String getDescription() {
-				return "*.xml";
-			}
-		});
+			        if(ext != null){
+				        if(ext.equals("xml")){
+				        	return true;
+				        }
+			        }
+					
+					return false;
+				}
+				@Override
+				public String getDescription() {
+					return "*.xml";
+				}
+			});
+		}
 		int ret = fc.showOpenDialog(null);
 		if(ret == JFileChooser.APPROVE_OPTION){
 			return fc.getSelectedFile().getAbsolutePath();
 		}
 		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-	 */
-	@Override
-	public void valueChanged(ListSelectionEvent e) {
-		RootFeatureWindow rootWindow = FeatureMining.getSingleton().getRootWindow(); 
-		JList list = rootWindow.getFeatureList();
-		if(list.getSelectedIndex() != -1){
-			rootWindow.getEditBox().setVisible(true);
-			rootWindow.getInfoTextArea().setText(rootWindow.getFeatureContainer().getInfoText((String) list.getSelectedValue()));
-			rootWindow.getDescTextArea().setText(rootWindow.getFeatureContainer().getDescriptionText((String) list.getSelectedValue()));
-		}
-	}
-
-	@Override
-	public void itemStateChanged(ItemEvent evt) {
-		JComboBox comboBox = (JComboBox)evt.getSource();
-		if(comboBox.getName().equals("preprocessorOptions")){
-			RootFeatureWindow rootWindow = FeatureMining.getSingleton().getRootWindow();
-			if (evt.getStateChange() == ItemEvent.SELECTED){
-				if((String)comboBox.getSelectedItem() == "Html"){
-					rootWindow.getOptionFrame().addHtmlOptions();
-				}else{
-					rootWindow.getOptionFrame().removeHtmlOptions();
-				}
-			}
-		}
 	}
 
 }
