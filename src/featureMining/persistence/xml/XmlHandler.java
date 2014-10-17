@@ -95,12 +95,12 @@ public class XmlHandler implements IPersistenceHandler{
 				oldName = oldNames.item(0).getTextContent();
 			}
 			
-			Feature newFeature = new Feature(name, source, singleWords, description.remove(0));
-			newFeature.setOccurrence(occurrence);
-			newFeature.setDescription(description);
-			newFeature.setOldName(oldName);
+			//Feature newFeature = new Feature(name, source, singleWords, description.remove(0));
+			//newFeature.setOccurrence(occurrence);
+			//newFeature.setDescription(description);
+			//newFeature.setOldName(oldName);
 			
-			featureContainer.getFeatureStorage().put(name, newFeature);
+			//featureContainer.getFeatureStorage().put(name, newFeature);
 		}
 		
 	}
@@ -183,11 +183,8 @@ public class XmlHandler implements IPersistenceHandler{
 		Element occurrence = doc.createElement("Occurrences");
 		occurrence.appendChild(doc.createTextNode(String.valueOf(feature.getOccurrence())));
 		
-		Element source = doc.createElement("Source");
-		source.appendChild(doc.createTextNode(feature.getSourceName()));
-		
 		Element descriptions = doc.createElement("Description");
-		for(String desc : feature.getDescription()){
+		for(String desc : feature.getDistinctDescription()){
 			Element sentence = doc.createElement("Sentence");
 			sentence.appendChild(doc.createTextNode(desc));
 			descriptions.appendChild(sentence);
@@ -202,7 +199,6 @@ public class XmlHandler implements IPersistenceHandler{
 		
 		feat.appendChild(name);
 		feat.appendChild(occurrence);
-		feat.appendChild(source);
 		feat.appendChild(descriptions);
 		feat.appendChild(singleWords);
 		

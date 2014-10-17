@@ -123,7 +123,7 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 				i = i + j;
 				String featureString = gate.Utils.stringFor(doc,
 				first.getStartNode().getOffset(), last.getEndNode().getOffset());
-				featureContainer.add(featureString, doc.getName(),wholeSentence);
+				featureContainer.add(featureString, wholeSentence, doc.getName(), first.getStartNode().getOffset(), last.getEndNode().getOffset());
 			}else{
 				i++;
 			}
@@ -156,7 +156,7 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 					while(sentenceIt.hasNext()){
 						Annotation sentence = (Annotation) sentenceIt.next();
 						String wholeSentence = gate.Utils.stringFor(doc, sentence.getStartNode().getOffset(), sentence.getEndNode().getOffset());
-						featureContainer.addOccurence(feature, wholeSentence);
+						featureContainer.addOccurence(feature, wholeSentence, doc.getName(), startIndex, endIndex);
 					}
 				}
 			}

@@ -27,18 +27,18 @@ public class SerialDSHandler implements IPersistenceHandler{
 		File dir = new File(path);
 		try {
 			rootWindow.addInfoTextLine("\nOpening Serial Datastore...");
-			SerialDataStore sds  = new SerialDataStore(dir.toURI().toURL().toString()); 
-			sds.open();
+			SerialDataStore serialDataStore  = new SerialDataStore(dir.toURI().toURL().toString()); 
+			serialDataStore.open();
 			rootWindow.addInfoTextLine("done");
 			rootWindow.addInfoTextLine("\nLoading Corpus...");
 			FeatureMap params = Factory.newFeatureMap();
-			params.put(DataStore.DATASTORE_FEATURE_NAME, sds);
-			params.put(DataStore.LR_ID_FEATURE_NAME, sds.getLrIds("gate.corpora.SerialCorpusImpl").get(0));
-			Corpus lr = (Corpus)Factory.createResource("gate.corpora.SerialCorpusImpl", params);
-			sds.close();
+			params.put(DataStore.DATASTORE_FEATURE_NAME, serialDataStore);
+			params.put(DataStore.LR_ID_FEATURE_NAME, serialDataStore.getLrIds("gate.corpora.SerialCorpusImpl").get(0));
+			Corpus corpus = (Corpus)Factory.createResource("gate.corpora.SerialCorpusImpl", params);
+			serialDataStore.close();
 			rootWindow.addInfoTextLine("done");
 			
-			FeatureContainer featureContainer = (FeatureContainer) lr.getFeatures().get("result");
+			FeatureContainer featureContainer = (FeatureContainer) corpus.getFeatures().get("result");
 			rootWindow.setContent(featureContainer);
 			
 		} catch (PersistenceException | UnsupportedOperationException | MalformedURLException | ResourceInstantiationException e) {
@@ -58,7 +58,8 @@ public class SerialDSHandler implements IPersistenceHandler{
 			SerialDataStore serialDataStore  = (SerialDataStore)Factory.createDataStore("gate.persist.SerialDataStore" , dir.toURI().toURL().toString());
 			
 			FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nOpening Serial DataStore");
-
+			
+			DataStoreHelper.prepareCorpusForDataStore(FeatureMining.getSingleton().getCorpus(), featureContainer);
 			DataStoreHelper.persistToDataStore(serialDataStore, FeatureMining.getSingleton().getCorpus());
 			FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nCorpus " + FeatureMining.getSingleton().getCorpus().getName() + " saved in DataStore");
 		} catch (PersistenceException | UnsupportedOperationException | MalformedURLException e) {

@@ -23,9 +23,11 @@ public class Feature implements Comparable, Serializable{
 	/** The synonyms. */
 	private ArrayList<String> synonyms;
 	
-	private String sourceName;
+	//private String sourceName;
 	
-	private ArrayList<String> description;
+	private ArrayList<FeatureOccurrence> featureOccurrences;
+	
+	private ArrayList<String> distinctDescription;
 	
 	private ArrayList<String> singleWords;
 	
@@ -34,14 +36,16 @@ public class Feature implements Comparable, Serializable{
 	 *
 	 * @param name the name
 	 */
-	public Feature(String name, String sourceName, ArrayList<String> singleWords, String wholeSentence){
+	public Feature(String name, ArrayList<String> singleWords, String wholeSentence, String docName, long startIndex, long endIndex){
 		this.name = name;
 		occurrence = 1;
 		synonyms = null;
-		this.sourceName = sourceName;
+		//this.sourceName = sourceName;
 		this.singleWords = singleWords;
-		description = new ArrayList<String>();
-		description.add(wholeSentence);
+		featureOccurrences = new ArrayList<FeatureOccurrence>();
+		distinctDescription = new ArrayList<String>();
+		distinctDescription.add(wholeSentence);
+		this.addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex);
 		oldName = null;
 	}
 	
@@ -57,21 +61,12 @@ public class Feature implements Comparable, Serializable{
 		this.occurrence = occurence;
 	}
 
-	public void setDescription(ArrayList<String> description) {
-		this.description = description;
+	public void setDistinctDescription(ArrayList<String> description) {
+		this.distinctDescription = description;
 	}
 
 	public void setOldName(String oldName) {
 		this.oldName = oldName;
-	}
-	/**
-	 * Adds the.
-	 */
-	public void add(String wholeSentence){
-		occurrence++;
-		if(!description.contains(wholeSentence)){
-			description.add(wholeSentence);
-		}
 	}
 
 	/**
@@ -83,12 +78,8 @@ public class Feature implements Comparable, Serializable{
 		return name;
 	}
 	
-	public ArrayList<String> getDescription() {
-		return description;
-	}
-
-	public String getSourceName() {
-		return sourceName;
+	public ArrayList<String> getDistinctDescription() {
+		return distinctDescription;
 	}
 
 	/**
@@ -109,14 +100,7 @@ public class Feature implements Comparable, Serializable{
 		return synonyms;
 	}
 
-	public void addDescSentence(String wholeSentence) {
-		if(!description.contains(wholeSentence)){
-			description.add(wholeSentence);
-		}
-		this.occurrence++;
-	}
-
-	public void update(String newName) {
+	public void updateName(String newName) {
 		this.oldName = this.name;
 		this.name = newName;
 		this.singleWords.clear();
@@ -130,6 +114,21 @@ public class Feature implements Comparable, Serializable{
 	public int compareTo(Object f) {
 		Feature feat = (Feature) f;
 		return feat.occurrence - this.occurrence;
+	}
+
+	public ArrayList<FeatureOccurrence> getFeatureOccurrences() {
+		return featureOccurrences;
+	}
+
+	public void addFeatureOccurrence(String wholeSentence, String docName,
+			long startIndex, long endIndex) {
+		if(!distinctDescription.contains(wholeSentence)){
+			distinctDescription.add(wholeSentence);
+		}
+		FeatureOccurrence featureOccurrence = new FeatureOccurrence(docName, startIndex, endIndex, wholeSentence);
+		this.featureOccurrences.add(featureOccurrence);
+		this.occurrence++;
+		
 	}
 	
 }
