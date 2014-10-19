@@ -23,6 +23,7 @@ import org.w3c.dom.NodeList;
 
 import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
+import featureMining.feature.FeatureOccurrence;
 import featureMining.main.FeatureMining;
 import featureMining.persistence.IPersistenceHandler;
 import featureMining.ui.RootFeatureWindow;
@@ -65,25 +66,15 @@ public class XmlHandler implements IPersistenceHandler{
 		rootWindow.setCurrentFeatureNum(nodeList.getLength());
 		for(int i = 0; i< nodeList.getLength(); i++){
 			Node feature = nodeList.item(i);
-			String name;
-			String source;
-			String oldName = null;
-			int occurrence;
-			ArrayList<String> description = new ArrayList<String>();
-			ArrayList<String> singleWords = new ArrayList<String>();
-			
 			Element featureElement = (Element) feature;
+			String name;
+			String oldName = null;
+			//int occurrence;
+			
 			name = featureElement.getElementsByTagName("Name").item(0).getTextContent();
-			source = featureElement.getElementsByTagName("Source").item(0).getTextContent();
-			occurrence = Integer.parseInt(featureElement.getElementsByTagName("Occurrences").item(0).getTextContent());
+			//occurrence = Integer.parseInt(featureElement.getElementsByTagName("Occurrences").item(0).getTextContent());
 			
-			Node descNode = featureElement.getElementsByTagName("Description").item(0);
-			Element descElement = (Element)descNode;
-			NodeList descList = descElement.getElementsByTagName("Sentence");
-			for(int j = 0; j < descList.getLength(); j++){
-				description.add(descList.item(j).getTextContent());
-			}
-			
+			ArrayList<String> singleWords = new ArrayList<String>();
 			Node wordNode = featureElement.getElementsByTagName("SingleWords").item(0);
 			Element wordElement = (Element)wordNode;
 			NodeList wordList = wordElement.getElementsByTagName("Word");
@@ -95,14 +86,27 @@ public class XmlHandler implements IPersistenceHandler{
 				oldName = oldNames.item(0).getTextContent();
 			}
 			
-			//Feature newFeature = new Feature(name, source, singleWords, description.remove(0));
-			//newFeature.setOccurrence(occurrence);
-			//newFeature.setDescription(description);
-			//newFeature.setOldName(oldName);
+			Feature newFeature = null;
+			Node occurrencesNode = featureElement.getElementsByTagName("FeatureOccurrences").item(0);
+			Element occurrencesElement = (Element)occurrencesNode;
+			NodeList featureOccurrencesList = occurrencesElement.getElementsByTagName("FeatureOccurrence");
+			for(int j = 0; j< featureOccurrencesList.getLength(); j++){
+				Element occurenceElement = (Element) featureOccurrencesList.item(j);
+				long start = Long.parseLong(occurenceElement.getElementsByTagName("StartOffset").item(0).getTextContent());
+				long end = Long.parseLong(occurenceElement.getElementsByTagName("EndOffset").item(0).getTextContent());
+				String containingSentence = occurenceElement.getElementsByTagName("ContainingSentence").item(0).getTextContent();
+				String docName = occurenceElement.getElementsByTagName("DocumentName").item(0).getTextContent();
+				
+				if(newFeature==null){
+					newFeature = new Feature(name, singleWords, containingSentence, docName, start, end);
+				}else{
+					newFeature.addFeatureOccurrence(containingSentence, docName, start, end);
+				}
+			}
 			
-			//featureContainer.getFeatureStorage().put(name, newFeature);
+			newFeature.setOldName(oldName);
+			featureContainer.getFeatureStorage().put(name, newFeature);
 		}
-		
 	}
 
 	@Override
@@ -139,7 +143,8 @@ public class XmlHandler implements IPersistenceHandler{
 			currentFeatureNum.appendChild(doc.createTextNode(String.valueOf(rootWindow.getCurrentFeatureNum())));
 			
 			Element precision = doc.createElement("Precision");
-			precision.appendChild(doc.createTextNode(String.valueOf(rootWindow.getCurrentFeatureNum()/rootWindow.getFeatureFound())+"%"));
+			float prec =  100.0f*((float)rootWindow.getCurrentFeatureNum() / (float) rootWindow.getFeatureFound());
+			precision.appendChild(doc.createTextNode(String.valueOf((int)prec) +"%"));
 			
 			evaluation.appendChild(featureFound);
 			evaluation.appendChild(currentFeatureNum);
@@ -180,7 +185,7 @@ public class XmlHandler implements IPersistenceHandler{
 		Element name = doc.createElement("Name");
 		name.appendChild(doc.createTextNode(feature.getName()));
 		
-		Element occurrence = doc.createElement("Occurrences");
+		Element occurrence = doc.createElement("OccurrencesNum");
 		occurrence.appendChild(doc.createTextNode(String.valueOf(feature.getOccurrence())));
 		
 		Element descriptions = doc.createElement("Description");
@@ -188,6 +193,25 @@ public class XmlHandler implements IPersistenceHandler{
 			Element sentence = doc.createElement("Sentence");
 			sentence.appendChild(doc.createTextNode(desc));
 			descriptions.appendChild(sentence);
+		}
+		
+		Element featureOccurrences = doc.createElement("FeatureOccurrences");
+		for(FeatureOccurrence fOccurrence : feature.getFeatureOccurrences()){
+			Element featureOccurrence = doc.createElement("FeatureOccurrence");
+			Element docName = doc.createElement("DocumentName");
+			docName.appendChild(doc.createTextNode(fOccurrence.getDocumentName()));
+			Element start = doc.createElement("StartOffset");
+			start.appendChild(doc.createTextNode(String.valueOf(fOccurrence.getStartOffset())));
+			Element end = doc.createElement("EndOffset");
+			end.appendChild(doc.createTextNode(String.valueOf(fOccurrence.getEndOffset())));
+			Element containingSentence = doc.createElement("ContainingSentence");
+			containingSentence.appendChild(doc.createTextNode(fOccurrence.getContainingSentence()));
+			
+			featureOccurrence.appendChild(docName);
+			featureOccurrence.appendChild(start);
+			featureOccurrence.appendChild(end);
+			featureOccurrence.appendChild(containingSentence);
+			featureOccurrences.appendChild(featureOccurrence);
 		}
 		
 		Element singleWords = doc.createElement("SingleWords");
@@ -200,6 +224,7 @@ public class XmlHandler implements IPersistenceHandler{
 		feat.appendChild(name);
 		feat.appendChild(occurrence);
 		feat.appendChild(descriptions);
+		feat.appendChild(featureOccurrences);
 		feat.appendChild(singleWords);
 		
 		if(feature.getOldName() != null){

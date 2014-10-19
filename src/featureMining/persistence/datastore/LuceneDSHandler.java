@@ -47,6 +47,11 @@ public class LuceneDSHandler implements IPersistenceHandler{
 			LuceneDataStoreImpl luceneDataStore = (LuceneDataStoreImpl)Factory.createDataStore
 					("gate.persist.LuceneDataStoreImpl", dir.toURI().toURL().toString());
 			
+			FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nOpening Lucene DataStore");
+			FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nStarting to index Files...");
+			
+			DataStoreHelper.prepareCorpusForDataStore(FeatureMining.getSingleton().getCorpus(), featureContainer);
+			
 			String indexPath = dir.getPath() + "-index";
 			indexDir = new File(indexPath);
 			DataStoreHelper.checkForExistingDir(indexDir); 
@@ -59,7 +64,8 @@ public class LuceneDSHandler implements IPersistenceHandler{
 			List<String> setsToInclude = new ArrayList<String>(); 
 			setsToInclude.add("Key"); 
 			setsToInclude.add("<null>"); 
-			setsToInclude.add("Original Markups");  
+			setsToInclude.add("Original markups");
+			setsToInclude.add("FeatureMiningResult");
 			
 			parameters.put(Constants.ANNOTATION_SETS_NAMES_TO_INCLUDE, setsToInclude); 
 			parameters.put(Constants.ANNOTATION_SETS_NAMES_TO_EXCLUDE, new ArrayList<String>()); 
@@ -69,11 +75,9 @@ public class LuceneDSHandler implements IPersistenceHandler{
 			  
 			luceneDataStore.setIndexer(indexer, parameters); 
 			luceneDataStore.setSearcher(new LuceneSearcher());
-			
-			FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nOpening Lucene DataStore");
-			FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nStarting to index Files...");
-
+		
 			DataStoreHelper.persistToDataStore(luceneDataStore, FeatureMining.getSingleton().getCorpus());
+			
 			FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nLucene DataStore created");
 			
 		}catch (IOException | PersistenceException | UnsupportedOperationException | IndexException | SearchException e1) {

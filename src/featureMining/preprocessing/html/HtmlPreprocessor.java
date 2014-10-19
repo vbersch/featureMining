@@ -42,6 +42,9 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 	@Override
 	public Corpus createAnnotatedCorpus(OptionTransferObject optionsTO) {
 		
+		if(optionsTO.getDocumentationType() == "Github"){
+			this.headingAnnotator = new GithubHeadingAnnotator();
+		}
 		this.baseUrl = optionsTO.getBaseUrl();
 		this.hostName = optionsTO.getHostName(); 
 		
@@ -58,8 +61,6 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 			this.headingAnnotator = new HtmlHeadingAnnotator();
 		}else if(optionsTO.getDocumentationType() == "Mixxx"){
 			this.headingAnnotator = new MixxxHeadingAnnotator();
-		}else if(optionsTO.getDocumentationType() == "Github"){
-			this.headingAnnotator = new GithubHeadingAnnotator();
 		}
 		this.headingAnnotator.annotateCorpus(this.corpus, this.baseUrl);
 		

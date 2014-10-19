@@ -127,8 +127,8 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		fireButton.addActionListener(this);
 
 		urlField = new JTextField(10);
-		//urlField.setText("https://github.com/radiant/radiant/wiki");
-		urlField.setText("http://mixxx.org/manual/latest/");
+		urlField.setText("https://github.com/radiant/radiant/wiki");
+		//urlField.setText("http://mixxx.org/manual/latest/");
 		// Create a panel for the url
 		JPanel buttonPane = new JPanel();
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));

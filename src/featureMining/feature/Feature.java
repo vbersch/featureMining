@@ -38,7 +38,7 @@ public class Feature implements Comparable, Serializable{
 	 */
 	public Feature(String name, ArrayList<String> singleWords, String wholeSentence, String docName, long startIndex, long endIndex){
 		this.name = name;
-		occurrence = 1;
+		occurrence = 0;
 		synonyms = null;
 		//this.sourceName = sourceName;
 		this.singleWords = singleWords;

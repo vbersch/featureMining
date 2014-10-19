@@ -52,7 +52,6 @@ public final class DataStoreHelper {
 		} catch (PersistenceException e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	public static void prepareCorpusForDataStore(Corpus corpus, FeatureContainer featureContainer) {
