@@ -20,7 +20,9 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
+import featureMining.persistence.xml.SettingsManager;
 
 
 
@@ -49,8 +51,24 @@ public class OptionWindow extends JFrame {
 		this.setTitle("Options");
 		this.setLocationRelativeTo(null);
 		
+		OptionTransferObject settings = SettingsManager.getOptions();
+		
+		if(settings.getHostName() == null){
+			if(this.baseUrl != settings.getBaseUrl()){
+				settings.setBaseUrl(this.baseUrl);
+			}
+			
+			Pattern hostPattern = Pattern.compile("//.*");
+			Matcher hostMatcher = hostPattern.matcher(this.baseUrl);
+			hostMatcher.find();
+			settings.setHostName(hostMatcher.group().replace("//github.com", ""));
+			settings.setDomainSpecific(true);
+			settings.setDocumentationType("General");
+			settings.setPreprocessingName("Html");
+			settings.setThreadNum(4);
+		}
+		
 		JPanel optionsPanel = new JPanel(new BorderLayout());
-		//optionsPanel.setLayout(new BoxLayout(optionsPanel , BoxLayout.PAGE_AXIS));
 		
 		labelPane = new JPanel(new GridLayout(0,1));
 		fieldPane = new JPanel(new GridLayout(0,1));
@@ -68,7 +86,7 @@ public class OptionWindow extends JFrame {
 		threadLabel.setMaximumSize(new Dimension(threadLabel.getPreferredSize()));
 		
 		JLabel domainLabel = new JLabel("Domain specific: ");
-		domainLabel.setToolTipText("Every Feature contains at least one Domain-specific Noun");
+		domainLabel.setToolTipText("Every Feature shall contain at least one Domain-specific Noun");
 		domainLabel.setMaximumSize(new Dimension(domainLabel.getPreferredSize()));
 		
 		htmlLabel = new JLabel("Documentation Format: ");
@@ -83,21 +101,17 @@ public class OptionWindow extends JFrame {
 		NumberFormat amountFormat = NumberFormat.getNumberInstance();
 		threadField = new JFormattedTextField(amountFormat);
 		threadField.setMaximumSize(new Dimension(Integer.MAX_VALUE, threadField.getPreferredSize().height) );
-		threadField.setValue(new Integer(4));
+		threadField.setValue(new Integer(settings.getThreadNum()));
 		threadField.setHorizontalAlignment(JTextField.CENTER);
 		
-		Pattern hostPattern = Pattern.compile("//.*?/");
-		Matcher hostMatcher = hostPattern.matcher(this.baseUrl);
-		hostMatcher.find();
-		
 		hostField = new JTextField(20);
-		hostField.setText(hostMatcher.group());
+		hostField.setText(settings.getHostName());
 		hostField.setMaximumSize(new Dimension(Integer.MAX_VALUE, hostField.getPreferredSize().height) );
 		hostField.setHorizontalAlignment(JTextField.CENTER);
 		
 		String[] options = {"Html" , "Pdf", "Word"};
 		preprocessingOptions = new JComboBox(options);
-		preprocessingOptions.setSelectedIndex(0);
+		preprocessingOptions.setSelectedItem(settings.getPreprocessingName());
 		preprocessingOptions.setMaximumSize(new Dimension(Integer.MAX_VALUE, preprocessingOptions.getPreferredSize().height) );
 		((JLabel)preprocessingOptions.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
 		preprocessingOptions.addItemListener(FeatureMining.getSingleton().getRootWindow().getGuiItemListener());
@@ -105,13 +119,17 @@ public class OptionWindow extends JFrame {
 		String[] htmlOptions = {"General" , "Mixxx" , "Github"};
 		htmlProcessingOptions = new JComboBox(htmlOptions);
 		htmlProcessingOptions.setName("preprocessingOptions");
-		htmlProcessingOptions.setSelectedIndex(1);
+		htmlProcessingOptions.setSelectedItem(settings.getDocumentationType());
 		htmlProcessingOptions.setMaximumSize(new Dimension(Integer.MAX_VALUE, htmlProcessingOptions.getPreferredSize().height) );
 		((JLabel)htmlProcessingOptions.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
 		
 		String[] domainOptions = {"True" , "False"};
 		domainProcessingOptions = new JComboBox(domainOptions);
-		domainProcessingOptions.setSelectedIndex(0);
+		if(settings.isDomainSpecific()){
+			domainProcessingOptions.setSelectedIndex(0);
+		}else{
+			domainProcessingOptions.setSelectedIndex(1);
+		}
 		domainProcessingOptions.setMaximumSize(new Dimension(Integer.MAX_VALUE, domainProcessingOptions.getPreferredSize().height) );
 		((JLabel)domainProcessingOptions.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
 		

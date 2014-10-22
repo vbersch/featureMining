@@ -1,7 +1,10 @@
 package featureMining.feature;
 
-public class OptionTransferObject {
+import javax.xml.bind.annotation.XmlRootElement;
 
+@XmlRootElement(name = "Settings")
+public class OptionTransferObject {  
+	
 	private String hostName;
 	private String baseUrl;
 	private String preprocessingName;
@@ -9,13 +12,9 @@ public class OptionTransferObject {
 	private int threadNum;
 	private boolean domainSpecific;
 	
-	public OptionTransferObject(String baseUrl, String hostName,
-			String preprocessor, int threadNum, String documentationType) {
-		this.baseUrl = baseUrl;
-		this.hostName = hostName;
-		this.preprocessingName = preprocessor;
-		this.documentationType = documentationType;
-		this.threadNum = threadNum;
+	
+	public OptionTransferObject() {
+		this.hostName = null;
 	}
 
 	public String getHostName() {
@@ -53,5 +52,26 @@ public class OptionTransferObject {
 	public void setDomainSpecific(boolean domainSpecific) {
 		this.domainSpecific = domainSpecific;
 	}
-	
+
+
+	public void setHostName(String hostName) {
+		this.hostName = hostName;
+	}
+
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
+	}
+
+	public void setPreprocessingName(String preprocessingName) {
+		this.preprocessingName = preprocessingName;
+	}
+
+	public void setDocumentationType(String documentationType) {
+		this.documentationType = documentationType;
+	}
+
+	public void setThreadNum(int threadNum) {
+		this.threadNum = threadNum;
+	}
+
 }

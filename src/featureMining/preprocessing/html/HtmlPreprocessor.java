@@ -43,13 +43,15 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 	public Corpus createAnnotatedCorpus(OptionTransferObject optionsTO) {
 		
 		if(optionsTO.getDocumentationType() == "Github"){
+			this.baseUrl = "https://github.com";
 			this.headingAnnotator = new GithubHeadingAnnotator();
+		}else{
+			this.baseUrl = optionsTO.getBaseUrl();
 		}
-		this.baseUrl = optionsTO.getBaseUrl();
 		this.hostName = optionsTO.getHostName(); 
 		
 		try {
-			this.corpus = gate.Factory.newCorpus(this.baseUrl);
+			this.corpus = gate.Factory.newCorpus(this.baseUrl + this.hostName);
 		} catch (ResourceInstantiationException e) {
 			e.printStackTrace();
 		}
@@ -57,12 +59,18 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 		String html = getHTML(baseUrl);
 		this.getContentFromBaseUrl(html);
 		
+		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nDocuments created...");
+		System.out.println("\nDocuments created...");
+		
 		if(optionsTO.getDocumentationType() == "General"){
 			this.headingAnnotator = new HtmlHeadingAnnotator();
 		}else if(optionsTO.getDocumentationType() == "Mixxx"){
 			this.headingAnnotator = new MixxxHeadingAnnotator();
 		}
 		this.headingAnnotator.annotateCorpus(this.corpus, this.baseUrl);
+		
+		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\nStarting Gate Processing Units...\n");
+		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\n--------------------------------------\n");
 		
 		return this.corpus;
 	}
@@ -92,11 +100,11 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 						String splitString[] = link.split("#");
 						link = splitString[0];
 					}
-				} else if (!link.matches(".*" + hostName + ".*")) {
-					link = "";
-				}
+				} 
 				if (link != "" && !links.contains(link)) {
-					links.offer(link);
+					if(link.contains(hostName)){
+						links.offer(link);
+					}
 				}
 			}
 		}
@@ -113,7 +121,6 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 		Runnable run = new DocWorker(httpClient);
 		for (int i = 0; i < FeatureMining.maxThreads; i++) {
 			threads.add(new Thread(run));
-		//	threads[i] = new DocWorker(httpClient, i + 1);
 		}
 
 		// start the threads
@@ -129,14 +136,6 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 				e.printStackTrace();
 			}
 		}
-
-		FeatureMining.getSingleton().getRootWindow()
-				.addInfoTextLine("\nDocuments created...");
-		FeatureMining.getSingleton().getRootWindow()
-				.addInfoTextLine("\nStarting Gate Processing Units...\n");
-		FeatureMining.getSingleton().getRootWindow()
-				.addInfoTextLine("\n--------------------------------------\n");
-		System.out.println("\nDocuments created...");
 	}
 	
 	private static String getHTML(String urlString) {

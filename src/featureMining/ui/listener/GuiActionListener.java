@@ -20,6 +20,7 @@ import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
 import featureMining.persistence.datastore.LuceneDSHandler;
 import featureMining.persistence.datastore.SerialDSHandler;
+import featureMining.persistence.xml.SettingsManager;
 import featureMining.persistence.xml.XmlHandler;
 import featureMining.ui.OptionWindow;
 import featureMining.ui.RootFeatureWindow;
@@ -125,9 +126,15 @@ public class GuiActionListener implements ActionListener{
 				rootWindow.getOptionFrame().dispose();
 			}else if(button.getName() == "featureMining"){
 				OptionWindow optionWindow = rootWindow.getOptionFrame();
-				OptionTransferObject optionsTO = new OptionTransferObject(optionWindow.getBaseUrl(), optionWindow.getHostName(),
-						optionWindow.getPreprocessor(), optionWindow.getThreadNum(), optionWindow.getDocumentationType());
+				OptionTransferObject optionsTO = SettingsManager.getOptions();
+				optionsTO.setBaseUrl(optionWindow.getBaseUrl());
+				optionsTO.setDocumentationType(optionWindow.getDocumentationType());
 				optionsTO.setDomainSpecific(optionWindow.getDomainOptions());
+				optionsTO.setHostName(optionWindow.getHostName());
+				optionsTO.setPreprocessingName(optionWindow.getPreprocessor());
+				optionsTO.setThreadNum(optionWindow.getThreadNum());
+				SettingsManager.saveOptions();
+				
 				UiWorker uiWorker = new UiWorker(rootWindow.getInfoTextArea(), optionsTO);
 				uiWorker.execute();
 				optionWindow.dispose();

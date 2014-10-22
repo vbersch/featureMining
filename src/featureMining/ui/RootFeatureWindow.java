@@ -33,7 +33,9 @@ import javax.swing.SwingUtilities;
 
 import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
+import featureMining.feature.OptionTransferObject;
 import featureMining.persistence.IPersistenceHandler;
+import featureMining.persistence.xml.SettingsManager;
 import featureMining.ui.listener.GuiActionListener;
 import featureMining.ui.listener.GuiItemListener;
 import featureMining.ui.listener.GuiListListener;
@@ -127,8 +129,13 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		fireButton.addActionListener(this);
 
 		urlField = new JTextField(10);
-		urlField.setText("https://github.com/radiant/radiant/wiki");
-		//urlField.setText("http://mixxx.org/manual/latest/");
+		OptionTransferObject settings = SettingsManager.restoreOptions();
+		String url="";
+		//urlField.setText("https://github.com/radiant/radiant/wiki");
+		if(settings != null){
+			url = settings.getBaseUrl();
+		}
+		urlField.setText(url);
 		// Create a panel for the url
 		JPanel buttonPane = new JPanel();
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
