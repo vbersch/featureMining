@@ -35,7 +35,7 @@ import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
 import featureMining.feature.OptionTransferObject;
 import featureMining.persistence.IPersistenceHandler;
-import featureMining.persistence.xml.SettingsManager;
+import featureMining.persistence.SettingsManager;
 import featureMining.ui.listener.GuiActionListener;
 import featureMining.ui.listener.GuiItemListener;
 import featureMining.ui.listener.GuiListListener;
@@ -338,6 +338,8 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		importXmlItem.addActionListener(guiActionListener);
 		
 		JMenuItem importLuceneItem = new JMenuItem("from lucene");
+		importLuceneItem.setName("importLucene");
+		importLuceneItem.addActionListener(guiActionListener);
 		
 		JMenuItem importSerialItem = new JMenuItem("from Serial Datastore");
 		importSerialItem.setName("importSerial");

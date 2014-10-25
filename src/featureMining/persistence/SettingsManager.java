@@ -1,6 +1,10 @@
-package featureMining.persistence.xml;
+package featureMining.persistence;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -48,6 +52,31 @@ public class SettingsManager {
 			options = new OptionTransferObject();
 		}
 		return options;
+	}
+
+	public static void loadBlacklists() {
+		if(!options.getFeatureBlacklistPath().equals("")){
+			options.setFeatureBlacklist(loadFile(options.getFeatureBlacklistPath()));
+		}
+		
+		if(!options.getSentenceBlacklistPath().equals("")){
+			options.setSentenceBlacklist(loadFile(options.getSentenceBlacklistPath()));
+		}
+	}
+
+	private static ArrayList<String> loadFile(String path) {
+		ArrayList<String> blacklist = new ArrayList<String>();
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(path));
+			String line = null;
+			while ((line = in.readLine()) != null) {
+				blacklist.add(line.trim());
+			}
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return blacklist;
 	}
 	
 }

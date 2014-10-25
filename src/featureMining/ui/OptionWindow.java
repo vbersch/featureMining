@@ -3,6 +3,9 @@ package featureMining.ui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.text.NumberFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,6 +15,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,7 +26,7 @@ import javax.swing.SwingConstants;
 
 import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
-import featureMining.persistence.xml.SettingsManager;
+import featureMining.persistence.SettingsManager;
 
 
 
@@ -38,6 +42,43 @@ public class OptionWindow extends JFrame {
 	private JPanel labelPane;
 	private JPanel fieldPane;
 	private JLabel htmlLabel;
+	private OptionTransferObject settings;
+	private JTextField featureBlField;
+	private JTextField sentenceBlField;
+	private ActionListener blacklistActionListener = new ActionListener(){
+
+		@Override
+		public void actionPerformed(ActionEvent sender) {
+			if(sender.getSource() instanceof JButton){
+				JButton button = (JButton) sender.getSource();
+				String path = showFileDialog();
+				if(button.getName().equals("sentenceBlacklist")){
+					sentenceBlField.setText(path);
+				}else if(button.getName().equals("featureBlacklist")){
+					featureBlField.setText(path);
+				}
+			}
+		}
+
+		private String showFileDialog() {
+			
+			final JFileChooser fc = new JFileChooser();
+			File dir = new File(System.getProperty("user.dir") + "/blacklists");
+			if(!dir.exists()){
+				dir.mkdir();
+			}
+			fc.setCurrentDirectory(dir);
+			fc.setApproveButtonText("Choose"); 
+			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			int ret = fc.showOpenDialog(null);
+			if(ret == JFileChooser.APPROVE_OPTION){
+				return fc.getSelectedFile().getAbsolutePath();
+			}
+			return null;
+		}
+			
+		
+	};
 	
 	public String getBaseUrl() {
 		return baseUrl;
@@ -45,32 +86,10 @@ public class OptionWindow extends JFrame {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public OptionWindow(String url){
-		this.baseUrl = url;
-		this.setSize(480 , 320);
-		this.setVisible(true);
-		this.setTitle("Options");
-		this.setLocationRelativeTo(null);
-		
-		OptionTransferObject settings = SettingsManager.getOptions();
-		
-		if(settings.getHostName() == null){
-			if(this.baseUrl != settings.getBaseUrl()){
-				settings.setBaseUrl(this.baseUrl);
-			}
-			
-			Pattern hostPattern = Pattern.compile("//.*");
-			Matcher hostMatcher = hostPattern.matcher(this.baseUrl);
-			hostMatcher.find();
-			settings.setHostName(hostMatcher.group().replace("//github.com", ""));
-			settings.setDomainSpecific(true);
-			settings.setDocumentationType("General");
-			settings.setPreprocessingName("Html");
-			settings.setThreadNum(4);
-		}
+		init(url);
 		
 		JPanel optionsPanel = new JPanel(new BorderLayout());
 		
-		labelPane = new JPanel(new GridLayout(0,1));
 		fieldPane = new JPanel(new GridLayout(0,1));
 		
 		JLabel headerText = new JLabel("Configuring Feature Mining for " + this.baseUrl);
@@ -81,28 +100,77 @@ public class OptionWindow extends JFrame {
 		headerPanel.add(Box.createVerticalStrut(15));
 		headerPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
 		headerPanel.add(Box.createVerticalStrut(15));
+
+		createLabels();
+		createFields();
+		JPanel bottomPane = createBottomPane();
+
+		optionsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+		optionsPanel.add(headerPanel, BorderLayout.NORTH);
+		optionsPanel.add(labelPane, BorderLayout.CENTER);
+		optionsPanel.add(fieldPane, BorderLayout.LINE_END);
+		optionsPanel.add(bottomPane, BorderLayout.PAGE_END);
 		
-		JLabel threadLabel = new JLabel("Number of Threads: ");
-		threadLabel.setMaximumSize(new Dimension(threadLabel.getPreferredSize()));
+		this.setContentPane(optionsPanel);
+		this.pack();
 		
-		JLabel domainLabel = new JLabel("Domain specific: ");
-		domainLabel.setToolTipText("Every Feature shall contain at least one Domain-specific Noun");
-		domainLabel.setMaximumSize(new Dimension(domainLabel.getPreferredSize()));
+		if(preprocessingOptions.getSelectedItem() == "Html"){
+			this.addHtmlOptions();
+		}
+	}
+
+	private JPanel createBottomPane() {
+		JPanel bottomPane = new JPanel();
+		JPanel buttonPane = new JPanel();
+		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
 		
-		htmlLabel = new JLabel("Documentation Format: ");
-		htmlLabel.setMaximumSize(new Dimension(htmlLabel.getPreferredSize()));
+		JButton goButton = new JButton("Go");
+		goButton.setName("featureMining");
+		goButton.addActionListener(FeatureMining.getSingleton().getRootWindow().getGuiListener());
 		
-		hostLabel = new JLabel("hostName: ");
-		hostLabel.setMaximumSize(new Dimension(hostLabel.getPreferredSize()));
+		JButton cancelButton = new JButton("Cancel");
+		cancelButton.setName("cancelOptions");
+		cancelButton.addActionListener(FeatureMining.getSingleton().getRootWindow().getGuiListener());
 		
-		JLabel preprocessingLabel = new JLabel("Preprocessor: ");
-		preprocessingLabel.setMaximumSize(new Dimension(preprocessingLabel.getPreferredSize()));
+		buttonPane.add(goButton);
+		buttonPane.add(cancelButton);
+		bottomPane.setLayout(new BoxLayout(bottomPane, BoxLayout.PAGE_AXIS));
 		
+		bottomPane.add(Box.createVerticalStrut(15));
+		bottomPane.add(new JSeparator(SwingConstants.HORIZONTAL));
+		bottomPane.add(Box.createVerticalStrut(15));
+		bottomPane.add(buttonPane);
+		return bottomPane;
+	}
+
+	private void createFields() {
 		NumberFormat amountFormat = NumberFormat.getNumberInstance();
 		threadField = new JFormattedTextField(amountFormat);
 		threadField.setMaximumSize(new Dimension(Integer.MAX_VALUE, threadField.getPreferredSize().height) );
 		threadField.setValue(new Integer(settings.getThreadNum()));
 		threadField.setHorizontalAlignment(JTextField.CENTER);
+
+		JPanel featureBlPicker = new JPanel();
+		featureBlPicker.setLayout(new BoxLayout(featureBlPicker, BoxLayout.LINE_AXIS));
+		featureBlField = new JTextField(20);
+		JButton featureBlButton = new JButton("...");
+		featureBlField.setText(settings.getFeatureBlacklistPath());
+		featureBlButton.setName("featureBlacklist");
+		featureBlButton.addActionListener(blacklistActionListener);
+		featureBlButton.setPreferredSize(new Dimension(15,10));
+		featureBlPicker.add(featureBlField);
+		featureBlPicker.add(featureBlButton);
+		
+		JPanel sentenceBlPicker = new JPanel();
+		sentenceBlPicker.setLayout(new BoxLayout(sentenceBlPicker, BoxLayout.LINE_AXIS));
+		sentenceBlField = new JTextField(20);
+		sentenceBlField.setText(settings.getSentenceBlacklistPath());
+		JButton sentenceBlButton = new JButton("...");
+		sentenceBlButton.addActionListener(blacklistActionListener);
+		sentenceBlButton.setPreferredSize(new Dimension(15,10));
+		sentenceBlButton.setName("sentenceBlacklist");
+		sentenceBlPicker.add(sentenceBlField);
+		sentenceBlPicker.add(sentenceBlButton);
 		
 		hostField = new JTextField(20);
 		hostField.setText(settings.getHostName());
@@ -133,49 +201,77 @@ public class OptionWindow extends JFrame {
 		domainProcessingOptions.setMaximumSize(new Dimension(Integer.MAX_VALUE, domainProcessingOptions.getPreferredSize().height) );
 		((JLabel)domainProcessingOptions.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
 		
-		labelPane.add(threadLabel);
-		labelPane.add(domainLabel);
-		labelPane.add(preprocessingLabel);
-		
 		fieldPane.add(threadField);
+		fieldPane.add(featureBlPicker);
+		fieldPane.add(sentenceBlPicker);
 		fieldPane.add(domainProcessingOptions);
 		fieldPane.add(preprocessingOptions);
 		
 		fieldPane.setPreferredSize(new Dimension(labelPane.getPreferredSize().width + 80  ,labelPane.getPreferredSize().height));
 		
-		JPanel buttonPane = new JPanel();
-		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+	}
+
+	private void createLabels() {
+		labelPane = new JPanel(new GridLayout(0,1));
 		
-		JButton goButton = new JButton("Go");
-		goButton.setName("featureMining");
-		goButton.addActionListener(FeatureMining.getSingleton().getRootWindow().getGuiListener());
+		JLabel threadLabel = new JLabel("Number of Threads: ");
+		threadLabel.setMaximumSize(new Dimension(threadLabel.getPreferredSize()));
 		
-		JButton cancelButton = new JButton("Cancel");
-		cancelButton.setName("cancelOptions");
-		cancelButton.addActionListener(FeatureMining.getSingleton().getRootWindow().getGuiListener());
+		JLabel featureBlacklistLabel = new JLabel("Blacklist Feature Filter: ");
+		featureBlacklistLabel.setToolTipText("A .txt File containing a List of Words, that must not "
+				+ "occur within a Feature. Features containing one of these words will be discarded.");
+		featureBlacklistLabel.setMaximumSize(new Dimension(featureBlacklistLabel.getPreferredSize()));
 		
-		buttonPane.add(goButton);
-		buttonPane.add(cancelButton);
+		JLabel sentenceBlacklistLabel = new JLabel("Blacklist Sentence Filter: ");
+		sentenceBlacklistLabel.setToolTipText("A .txt File containing a List of Words, that must not "
+				+ "occur within a sentence containing a Feature.\nSentences containing of of these "
+				+ "words will not be considered for Feature Mining.");
+		sentenceBlacklistLabel.setMaximumSize(new Dimension(sentenceBlacklistLabel.getPreferredSize()));
 		
-		JPanel bottomPane = new JPanel();
-		bottomPane.setLayout(new BoxLayout(bottomPane, BoxLayout.PAGE_AXIS));
+		JLabel domainLabel = new JLabel("Domain specific: ");
+		domainLabel.setToolTipText("Every Feature shall contain at least one Domain-specific Noun");
+		domainLabel.setMaximumSize(new Dimension(domainLabel.getPreferredSize()));
 		
-		bottomPane.add(Box.createVerticalStrut(15));
-		bottomPane.add(new JSeparator(SwingConstants.HORIZONTAL));
-		bottomPane.add(Box.createVerticalStrut(15));
-		bottomPane.add(buttonPane);
+		htmlLabel = new JLabel("Documentation Format: ");
+		htmlLabel.setMaximumSize(new Dimension(htmlLabel.getPreferredSize()));
 		
-		optionsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-		optionsPanel.add(headerPanel, BorderLayout.NORTH);
-		optionsPanel.add(labelPane, BorderLayout.CENTER);
-		optionsPanel.add(fieldPane, BorderLayout.LINE_END);
-		optionsPanel.add(bottomPane, BorderLayout.PAGE_END);
+		hostLabel = new JLabel("hostName: ");
+		hostLabel.setMaximumSize(new Dimension(hostLabel.getPreferredSize()));
 		
-		this.setContentPane(optionsPanel);
-		this.pack();
+		JLabel preprocessingLabel = new JLabel("Preprocessor: ");
+		preprocessingLabel.setMaximumSize(new Dimension(preprocessingLabel.getPreferredSize()));
 		
-		if(preprocessingOptions.getSelectedItem() == "Html"){
-			this.addHtmlOptions();
+		labelPane.add(threadLabel);
+		labelPane.add(featureBlacklistLabel);
+		labelPane.add(sentenceBlacklistLabel);
+		labelPane.add(domainLabel);
+		labelPane.add(preprocessingLabel);
+		
+	}
+
+	private void init(String url) {
+		this.baseUrl = url;
+		this.setSize(480 , 320);
+		this.setVisible(true);
+		this.setTitle("Options");
+		this.setLocationRelativeTo(null);
+		this.setResizable(false);
+		
+		settings = SettingsManager.getOptions();
+		
+		if(settings.getHostName() == null){
+			if(this.baseUrl != settings.getBaseUrl()){
+				settings.setBaseUrl(this.baseUrl);
+			}
+			
+			Pattern hostPattern = Pattern.compile("//.*");
+			Matcher hostMatcher = hostPattern.matcher(this.baseUrl);
+			hostMatcher.find();
+			settings.setHostName(hostMatcher.group().replace("//github.com", ""));
+			settings.setDomainSpecific(true);
+			settings.setDocumentationType("General");
+			settings.setPreprocessingName("Html");
+			settings.setThreadNum(4);
 		}
 		
 	}
@@ -224,5 +320,13 @@ public class OptionWindow extends JFrame {
 		}else{
 			return null;
 		}
+	}
+
+	public String getFeatureBlacklistPath() {
+		return this.featureBlField.getText();
+	}
+
+	public String getSentenceBlacklistPath() {
+		return this.sentenceBlField.getText();
 	}
 }

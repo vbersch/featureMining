@@ -3,6 +3,7 @@ package featureMining.processing;
 import featureMining.feature.FeatureContainer;
 import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
+import featureMining.persistence.SettingsManager;
 import gate.Corpus;
 import gate.Factory;
 import gate.FeatureMap;
@@ -11,18 +12,16 @@ import gate.creole.SerialAnalyserController;
 import gate.util.GateException;
 
 public class DocumentProcessor implements ISimpleProcessor{
-	
-	private OptionTransferObject optionsTO;
-	
+		
 	public DocumentProcessor(OptionTransferObject optionsTO){
-		this.optionsTO = optionsTO;
+		
 	}
 	
 	@Override
 	public FeatureContainer processCorpus(FeatureContainer featureContainer, Corpus corpus) {
 		
 		featureContainer.setLinkNum(corpus.getDocumentNames().size());
-		//corpus.getFeatures().put("featureContainer", FeatureContainer.packContainer(featureContainer));
+		featureContainer.setOptions(SettingsManager.getOptions());
 		
 		String[] processingResources = {
 				"gate.creole.tokeniser.DefaultTokeniser",
@@ -32,24 +31,24 @@ public class DocumentProcessor implements ISimpleProcessor{
 		};
 
 		try {
-			runProcessingResources(processingResources, corpus, featureContainer);
+			featureContainer = runProcessingResources(processingResources, corpus, featureContainer);
 		} catch (GateException e) {
 			e.printStackTrace();
 		}
 		
-		return (FeatureContainer) corpus.getFeatures().get("result");
+		return featureContainer;
 	}
 	
-	private void runProcessingResources(String[] processingResource, Corpus corpus, FeatureContainer featureContainer)
+	private FeatureContainer runProcessingResources(String[] processingResource, Corpus corpus, FeatureContainer featureContainer)
 			throws GateException {
 		SerialAnalyserController pipeline = (SerialAnalyserController)Factory.createResource("gate.creole.SerialAnalyserController");
-
+		LanguageAnalyser res = null;
 		for (int pr = 0; pr < processingResource.length; pr++) {
 			FeatureMining.getSingleton().getRootWindow().addInfoTextLine("\n\t* Loading " + processingResource[pr] + " ... ");
 			System.out.print("\n\t* Loading " + processingResource[pr]
 					+ " ... ");
 			
-			LanguageAnalyser res = null;
+			
 			if(processingResource[pr].equals("featureMining.processing.pr.DocumentProcessorPR")){	
 				FeatureMap map = Factory.newFeatureMap();
 				map.put("featureContainer", featureContainer);
@@ -68,5 +67,6 @@ public class DocumentProcessor implements ISimpleProcessor{
 		pipeline.execute();
 		FeatureMining.getSingleton().getRootWindow().addInfoTextLine("done");
 		System.out.println("done");
+		return (FeatureContainer) res.getFeatures().get("featureContainer");
 	}
 }

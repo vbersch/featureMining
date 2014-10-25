@@ -3,12 +3,14 @@ package featureMining.persistence.datastore;
 import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
 import featureMining.feature.FeatureOccurrence;
+import featureMining.main.FeatureMining;
 import gate.AnnotationSet;
 import gate.Corpus;
 import gate.DataStore;
 import gate.Document;
 import gate.Factory;
 import gate.FeatureMap;
+import gate.creole.ResourceInstantiationException;
 import gate.persist.PersistenceException;
 import gate.util.InvalidOffsetException;
 
@@ -46,6 +48,15 @@ public final class DataStoreHelper {
 	public static void persistToDataStore(DataStore dataStore, Corpus corpus){
 		try {
 			dataStore.open();
+//			if(corpus.getDataStore() != null){
+//				corpus.getDataStore().
+//			}
+//			Corpus newCorpus =  gate.Factory.newCorpus(corpus.getName()+"0");
+//			//copy old corpus
+//			newCorpus.addAll(corpus);
+//			newCorpus.getFeatures().put("result", corpus.getFeatures().get("result"));
+//			corpus = null;
+//			FeatureMining.getSingleton().setCorpus(newCorpus);
 			Corpus persistCorpus = (Corpus) dataStore.adopt(corpus);
 			dataStore.sync(persistCorpus);
 			dataStore.close();

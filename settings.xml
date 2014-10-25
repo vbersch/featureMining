@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Settings>
+    <baseUrl>http://mixxx.org/manual/latest/</baseUrl>
+    <documentationType>Mixxx</documentationType>
+    <domainSpecific>true</domainSpecific>
+    <featureBlacklist>Mixxx</featureBlacklist>
+    <featureBlacklist>Mix</featureBlacklist>
+    <featureBlacklist>bla</featureBlacklist>
+    <featureBlacklistPath></featureBlacklistPath>
+    <hostName>/manual/latest/</hostName>
+    <preprocessingName>Html</preprocessingName>
+    <sentenceBlacklist>Mixxx</sentenceBlacklist>
+    <sentenceBlacklist>Mix</sentenceBlacklist>
+    <sentenceBlacklist>bla</sentenceBlacklist>
+    <sentenceBlacklistPath>C:\Users\test\workspace\FeatureMining\blacklists\featureBlacklist.txt</sentenceBlacklistPath>
+    <threadNum>4</threadNum>
+</Settings>

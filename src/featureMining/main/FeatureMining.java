@@ -110,6 +110,10 @@ public class FeatureMining {//Singleton
 		return this.documentProcessor;
 	}
 
+	public void setCorpus(Corpus corpus) {
+		this.corpus = corpus;
+	}
+
 	public IDocumentPreprocessor getDocumentPreprocessor() {
 		return documentPreprocessor;
 	}

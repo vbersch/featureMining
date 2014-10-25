@@ -32,7 +32,7 @@ public class LuceneDSHandler implements IPersistenceHandler{
 	
 	@Override
 	public void load(String path) {
-	
+		SerialDSHandler.getSingleton().load(path);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

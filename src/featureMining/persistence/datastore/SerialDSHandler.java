@@ -26,7 +26,7 @@ public class SerialDSHandler implements IPersistenceHandler{
 		rootWindow = FeatureMining.getSingleton().getRootWindow();
 		File dir = new File(path);
 		try {
-			rootWindow.addInfoTextLine("\nOpening Serial Datastore...");
+			rootWindow.addInfoTextLine("\nOpening Datastore...");
 			SerialDataStore serialDataStore  = new SerialDataStore(dir.toURI().toURL().toString()); 
 			serialDataStore.open();
 			rootWindow.addInfoTextLine("done");
@@ -38,11 +38,13 @@ public class SerialDSHandler implements IPersistenceHandler{
 			serialDataStore.close();
 			rootWindow.addInfoTextLine("done");
 			
+			FeatureMining.getSingleton().setCorpus(corpus);
+			
 			FeatureContainer featureContainer = (FeatureContainer) corpus.getFeatures().get("result");
 			rootWindow.setContent(featureContainer);
 			
 		} catch (PersistenceException | UnsupportedOperationException | MalformedURLException | ResourceInstantiationException e) {
-			rootWindow.addInfoTextLine("\nOpening Serial Datastore failed...");
+			rootWindow.addInfoTextLine("\nOpening Datastore failed...");
 			e.printStackTrace();
 		}
 		

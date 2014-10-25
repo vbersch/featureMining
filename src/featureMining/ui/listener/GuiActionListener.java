@@ -18,9 +18,9 @@ import javax.swing.filechooser.FileFilter;
 
 import featureMining.feature.OptionTransferObject;
 import featureMining.main.FeatureMining;
+import featureMining.persistence.SettingsManager;
 import featureMining.persistence.datastore.LuceneDSHandler;
 import featureMining.persistence.datastore.SerialDSHandler;
-import featureMining.persistence.xml.SettingsManager;
 import featureMining.persistence.xml.XmlHandler;
 import featureMining.ui.OptionWindow;
 import featureMining.ui.RootFeatureWindow;
@@ -74,7 +74,7 @@ public class GuiActionListener implements ActionListener{
 						rootWindow.getPersistenceHandler().persist(path, rootWindow.getFeatureContainer());
 					}
 				}
-			}else if(item.getName().equals("importXml")){
+			}else if(item.getName().equals("importXml") ){
 				rootWindow.setPersistenceHandler(XmlHandler.getSingleton());
 				String path = this.showFileDialog("xml" , "import");
 				if(path != null){
@@ -86,7 +86,13 @@ public class GuiActionListener implements ActionListener{
 				}
 			}else if(item.getName().equals("importSerial")){
 				rootWindow.setPersistenceHandler(SerialDSHandler.getSingleton());
-				String path = this.showFileDialog("serialDataStores", "export");
+				String path = this.showFileDialog("serialDataStores", "import");
+				if(path != null){
+					rootWindow.getPersistenceHandler().load(path);
+				}
+			}else if(item.getName().equals("importLucene")){
+				rootWindow.setPersistenceHandler(SerialDSHandler.getSingleton());
+				String path = this.showFileDialog("luceneDataStores", "import");
 				if(path != null){
 					rootWindow.getPersistenceHandler().load(path);
 				}
@@ -133,6 +139,9 @@ public class GuiActionListener implements ActionListener{
 				optionsTO.setHostName(optionWindow.getHostName());
 				optionsTO.setPreprocessingName(optionWindow.getPreprocessor());
 				optionsTO.setThreadNum(optionWindow.getThreadNum());
+				optionsTO.setFeatureBlacklistPath(optionWindow.getFeatureBlacklistPath());
+				optionsTO.setSentenceBlacklistPath(optionWindow.getSentenceBlacklistPath());
+				SettingsManager.loadBlacklists();
 				SettingsManager.saveOptions();
 				
 				UiWorker uiWorker = new UiWorker(rootWindow.getInfoTextArea(), optionsTO);
@@ -148,9 +157,7 @@ public class GuiActionListener implements ActionListener{
 		fc.setCurrentDirectory(new File(System.getProperty("user.dir") + "/" + dir));
 		fc.setApproveButtonText("Choose"); 
 		if(dir.equals("luceneDataStores") || dir.equals("serialDataStores")){
-			if(mode.equals("export")){
-				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			}
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		}else if(dir.equals("xml")){
 			fc.setFileFilter(new FileFilter(){
 				@Override

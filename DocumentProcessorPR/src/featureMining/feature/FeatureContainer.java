@@ -21,6 +21,7 @@ public class FeatureContainer implements Serializable{
 	/** The feature storage. */
 	private HashMap<String, Feature> featureStorage;
 	private int linkNum;
+	private OptionTransferObject options;
 	
 	/**
 	 * Instantiates a new feature container.
@@ -32,6 +33,14 @@ public class FeatureContainer implements Serializable{
 	
 	public int getLinkNum() {
 		return linkNum;
+	}
+
+	public OptionTransferObject getOptions() {
+		return options;
+	}
+
+	public void setOptions(OptionTransferObject options) {
+		this.options = options;
 	}
 
 	public void setLinkNum(int linkNum) {

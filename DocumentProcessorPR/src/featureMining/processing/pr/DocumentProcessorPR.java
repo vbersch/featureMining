@@ -42,7 +42,7 @@ import gate.util.OffsetComparator;
  * This class is the implementation of the resource DOCUMENTPROCESSORPR.
  */
 @CreoleResource(name = "DocumentProcessorPR", 
-				comment = "Test Comment")
+				comment = "A processing Ressource to mine the Features of a Gate Corpus")
 public class DocumentProcessorPR extends AbstractProcessingResource implements LanguageAnalyser{
 
 	private static final long serialVersionUID = 4408363290028424392L;
@@ -51,9 +51,9 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 	private static FeatureContainer featureContainer;
 	private static int docNum;
 	private static int currentDoc;
-	
 
 	public Resource init() throws ResourceInstantiationException {
+		
 		docNum = featureContainer.getLinkNum();
 		currentDoc = 0;
 		return this;
@@ -83,6 +83,9 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 		long start = next.getStartNode().getOffset();
 		long end = next.getEndNode().getOffset();
 		String wholeSentence = gate.Utils.stringFor(doc, start, end);
+		if(containsBlacklistWord(wholeSentence , featureContainer.getOptions().getSentenceBlacklist())){
+			return;
+		}
 		List sortedTokens = new ArrayList(tokens.getContained(next.getStartNode().getOffset(), next.getEndNode().getOffset()));
 		Collections.sort(sortedTokens, new OffsetComparator());
 		int i = 0;
@@ -91,7 +94,7 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 			Annotation last = null;
 			Annotation token = (Annotation) sortedTokens.get(i);
 			String category = token.getFeatures().get("category").toString();
-			if (isNoun(category,"dsp")){
+			if (isNoun(category,featureContainer.getOptions().isDomainSpecific())){
 				int j = 0;
 				boolean foundFirst = false;
 				boolean foundLast = false;
@@ -99,7 +102,7 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 					if(i + j < sortedTokens.size()){
 						Annotation nextToken = (Annotation)sortedTokens.get(i+j);
 						String nextCategory = nextToken.getFeatures().get("category").toString();
-						if(isNoun(nextCategory, "") && !foundLast){
+						if(isNoun(nextCategory, false) && !foundLast){
 							last = nextToken;
 						}else{
 							foundLast = true;
@@ -110,7 +113,7 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 					if(i - j >= 0){
 						Annotation prevToken = (Annotation)sortedTokens.get(i-j);
 						String prevCategory = prevToken.getFeatures().get("category").toString();
-						if(isNoun(prevCategory, "") && !foundFirst){
+						if(isNoun(prevCategory, false) && !foundFirst){
 							first = prevToken;
 						}else{
 							foundFirst = true;
@@ -120,18 +123,30 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 					}
 					j++;
 				}while(!foundFirst || !foundLast);
+				
 				i = i + j;
 				String featureString = gate.Utils.stringFor(doc,
 				first.getStartNode().getOffset(), last.getEndNode().getOffset());
-				featureContainer.add(featureString, wholeSentence, doc.getName(), first.getStartNode().getOffset(), last.getEndNode().getOffset());
+				if(!containsBlacklistWord(featureString, featureContainer.getOptions().getFeatureBlacklist())){
+					featureContainer.add(featureString, wholeSentence, doc.getName(), first.getStartNode().getOffset(), last.getEndNode().getOffset());
+				}
 			}else{
 				i++;
 			}
 		}
 	}
 	
-	public boolean isNoun(String category, String dsp) {
-		if(dsp.equals("dsp") ){
+	private boolean containsBlacklistWord(String candidate, ArrayList<String> sentenceBlacklist) {
+		for(String word : sentenceBlacklist){
+			if(candidate.contains(word)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isNoun(String category, boolean dsp) {
+		if(dsp){
 			return (category.equals("NNP") || category.equals("NNPS"));
 		}
 		return (category.equals("NNP") || category.equals("NNPS") || category.equals("NN") || category.equals("NNS"));
