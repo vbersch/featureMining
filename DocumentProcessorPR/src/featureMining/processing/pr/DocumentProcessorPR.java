@@ -83,6 +83,8 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 		long start = next.getStartNode().getOffset();
 		long end = next.getEndNode().getOffset();
 		String wholeSentence = gate.Utils.stringFor(doc, start, end);
+		String hierarchy = next.getFeatures().get("hierarchy").toString();
+		hierarchy = "bla";
 		if(containsBlacklistWord(wholeSentence , featureContainer.getOptions().getSentenceBlacklist())){
 			return;
 		}
@@ -92,8 +94,10 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 		while(i < sortedTokens.size()) {
 			Annotation first = null;
 			Annotation last = null;
+			ArrayList<Annotation> featureAnnots;
 			Annotation token = (Annotation) sortedTokens.get(i);
 			String category = token.getFeatures().get("category").toString();
+
 			if (isNoun(category,featureContainer.getOptions().isDomainSpecific())){
 				int j = 0;
 				boolean foundFirst = false;
@@ -128,7 +132,9 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 				String featureString = gate.Utils.stringFor(doc,
 				first.getStartNode().getOffset(), last.getEndNode().getOffset());
 				if(!containsBlacklistWord(featureString, featureContainer.getOptions().getFeatureBlacklist())){
-					featureContainer.add(featureString, wholeSentence, doc.getName(), first.getStartNode().getOffset(), last.getEndNode().getOffset());
+					featureAnnots = new ArrayList(tokens.get(first.getStartNode().getOffset(), last.getEndNode().getOffset()));
+					Collections.sort(featureAnnots , new OffsetComparator());
+					featureContainer.addFeature(featureAnnots, wholeSentence, doc, hierarchy);
 				}
 			}else{
 				i++;
@@ -154,7 +160,7 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 	
 	private void addFeatureOccurrences(Document doc , FeatureContainer featureContainer){
 		AnnotationSet contents = doc.getAnnotations("Original markups").get("content");
-		List sortedContents = new ArrayList(contents);
+		List<Annotation> sortedContents = new ArrayList<Annotation>(contents);
 		
 		Collections.sort(sortedContents, new OffsetComparator());
 		
@@ -167,11 +173,11 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 				while(featureMatcher.find()){
 					long startIndex = contentAnnot.getStartNode().getOffset() + (long)featureMatcher.start();
 					long endIndex = contentAnnot.getStartNode().getOffset() + (long)featureMatcher.end();
-					Iterator sentenceIt = doc.getAnnotations().get(startIndex, endIndex).get("Sentence").iterator();
+					Iterator<Annotation> sentenceIt = doc.getAnnotations().get(startIndex, endIndex).get("Sentence").iterator();
 					while(sentenceIt.hasNext()){
 						Annotation sentence = (Annotation) sentenceIt.next();
 						String wholeSentence = gate.Utils.stringFor(doc, sentence.getStartNode().getOffset(), sentence.getEndNode().getOffset());
-						featureContainer.addOccurence(feature, wholeSentence, doc.getName(), startIndex, endIndex);
+						featureContainer.addOccurence(feature, wholeSentence, doc.getName(), startIndex, endIndex, "0");
 					}
 				}
 			}

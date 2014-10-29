@@ -480,14 +480,14 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	}
 
 	public void updateFeatureList() {
-		DefaultListModel model = (DefaultListModel) this.featureList.getModel();
+		DefaultListModel<String> model = (DefaultListModel<String>) this.featureList.getModel();
 		model.clear();
 		
 		List<Feature> sortedFeatures = new ArrayList<Feature>(featureContainer.getFeatureStorage().values());
 		Collections.sort(sortedFeatures);
 		
 		for (Feature feature : sortedFeatures) {
-			model.addElement(feature.getName());
+			model.addElement(feature.getLabel());
 		}
 	}
 
@@ -500,4 +500,5 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		evalTextArea.setText(text);
 		
 	}
+
 }

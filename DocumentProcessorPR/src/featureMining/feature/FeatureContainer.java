@@ -1,5 +1,8 @@
 package featureMining.feature;
 
+import gate.Annotation;
+import gate.Document;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,6 +23,7 @@ public class FeatureContainer implements Serializable{
 
 	/** The feature storage. */
 	private HashMap<String, Feature> featureStorage;
+	private HashMap<String, Feature> featureDictionary;
 	private int linkNum;
 	private OptionTransferObject options;
 	
@@ -28,6 +32,7 @@ public class FeatureContainer implements Serializable{
 	 */
 	public FeatureContainer(){
 		this.featureStorage = new HashMap<String, Feature>();
+		this.featureDictionary = new HashMap<String, Feature>();
 		linkNum = 0;
 	}
 	
@@ -52,7 +57,7 @@ public class FeatureContainer implements Serializable{
 	 *
 	 * @param featureString the feature string
 	 */
-	public void add(String featureString, String wholeSentence, String docName, long startIndex, long endIndex){
+	public void addFeature(String featureString, String wholeSentence, String docName, long startIndex, long endIndex, String hierarchy){
 		String newFeature = "";
 		ArrayList<String> singleWords = new ArrayList<String>();
 		//filter some words
@@ -67,9 +72,9 @@ public class FeatureContainer implements Serializable{
 		
 		if(newFeature != ""){
 			if(this.featureStorage.containsKey(newFeature)){
-				this.featureStorage.get(newFeature).addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex);
+				this.featureStorage.get(newFeature).addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex, hierarchy);
 			}else{
-				this.featureStorage.put(newFeature , new Feature(newFeature, singleWords, wholeSentence, docName, startIndex, endIndex));
+				this.featureStorage.put(newFeature , new Feature(newFeature, singleWords, wholeSentence, docName, startIndex, endIndex, hierarchy));
 			}
 		}
 	}
@@ -91,24 +96,23 @@ public class FeatureContainer implements Serializable{
 	 */
 	public String getInfoText(String key) {
 		String info = "";
-		Feature feature = this.featureStorage.get(key);
-		info += feature.getName();
+		Feature feature = this.featureDictionary.get(key);
+		info += feature.getLabel();
 		info += "\n#occurrences: \t" + feature.getOccurrence();
-		//info += "\n#Found in: \t" + feature.getSourceName();
-		if(feature.getOldName() != null){
-			info += "\nold Name: " + feature.getOldName();
+		if(feature.getOldLabel() != null){
+			info += "\nold Name: " + feature.getOldLabel();
 		}
 		return info;
 	}
 	
-	public void addOccurence(String key, String wholeSentence, String docName, long startIndex, long endIndex){
-		this.featureStorage.get(key).addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex);
+	public void addOccurence(String key, String wholeSentence, String docName, long startIndex, long endIndex, String hierarchy){
+		this.featureStorage.get(key).addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex, hierarchy);
 	}
 	
 	public String getDescriptionText(String key){
 		String desc = "";
 		
-		Feature feature = this.featureStorage.get(key);
+		Feature feature = this.featureDictionary.get(key);
 		
 		for(String text : feature.getDistinctDescription()){
 			desc += text + "\n-------------------\n";
@@ -157,5 +161,50 @@ public class FeatureContainer implements Serializable{
 		}
 		return null;
 	}
-	
+
+	public void addFeature(ArrayList<Annotation> featureAnnots, String wholeSentence, Document doc, String hierarchy) {
+		String featureString = "";
+		String featureStem = "";
+		ArrayList<String> singleWords = new ArrayList<String>();
+		//filter some words
+		for(Annotation token : featureAnnots){
+			String word = token.getFeatures().get("string").toString();
+			String stem = token.getFeatures().get("stem").toString();
+			if(word.matches("[a-zA-Z]*") && !word.matches("[a-zA-Z]")){
+				featureString += word + " ";
+				featureStem += stem + " ";
+				singleWords.add(stem);
+			}
+		}
+		
+		featureString = featureString.trim();
+		featureStem = featureStem.trim();
+		
+		long startIndex = featureAnnots.get(0).getStartNode().getOffset();
+		long endIndex = featureAnnots.get(featureAnnots.size()-1).getEndNode().getOffset();
+		
+		if(!featureStem.equals("")){
+			
+			FeatureOccurrence newOccurrence = new FeatureOccurrence();
+			newOccurrence.setContainingSentence(wholeSentence);
+			newOccurrence.setOccurrenceName(featureString);
+			newOccurrence.setDocumentName(doc.getName());
+			newOccurrence.setStartOffset(startIndex);
+			newOccurrence.setEndOffset(endIndex);
+			newOccurrence.setHierarchy(hierarchy);
+			
+			if(this.featureStorage.containsKey(featureStem)){
+				this.featureStorage.get(featureStem).addFeatureOccurrence(newOccurrence);
+			}else{
+				Feature newFeature = new Feature();
+				newFeature.setFeatureStem(featureStem);
+				newFeature.setLabel(featureString);
+				newFeature.setSingleWords(singleWords);
+				newFeature.addFeatureOccurrence(newOccurrence);
+				this.featureStorage.put(featureStem , newFeature);
+			}
+			
+			this.featureDictionary.put(featureString, this.featureStorage.get(featureStem));
+		}
+	}
 }

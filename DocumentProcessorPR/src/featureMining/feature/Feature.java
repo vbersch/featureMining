@@ -13,7 +13,7 @@ public class Feature implements Comparable, Serializable{
 	private static final long serialVersionUID = -827956067506812104L;
 
 	/** The name. */
-	private String name;
+	private String label;
 	
 	private String oldName;
 	
@@ -31,32 +31,70 @@ public class Feature implements Comparable, Serializable{
 	
 	private ArrayList<String> singleWords;
 	
+	private String featureStem;
+	
 	/**
 	 * Instantiates a new feature.
 	 *
-	 * @param name the name
+	 * @param label the name
 	 */
-	public Feature(String name, ArrayList<String> singleWords, String wholeSentence, String docName, long startIndex, long endIndex){
-		this.name = name;
+	public Feature(String label, ArrayList<String> singleWords, String wholeSentence, String docName, long startIndex, long endIndex, String hierarchy){
+		this.label = label;
 		occurrence = 0;
 		synonyms = null;
-		//this.sourceName = sourceName;
 		this.singleWords = singleWords;
 		featureOccurrences = new ArrayList<FeatureOccurrence>();
 		distinctDescription = new ArrayList<String>();
 		distinctDescription.add(wholeSentence);
-		this.addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex);
+		this.addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex, hierarchy);
 		oldName = null;
 	}
 	
+	public Feature() {
+		oldName = null;
+		featureOccurrences = new ArrayList<FeatureOccurrence>();
+		distinctDescription = new ArrayList<String>();
+		occurrence = 0;
+		synonyms = null;
+	}
+
 	public ArrayList<String> getSingleWords() {
 		return singleWords;
+	}
+
+	public String getOldLabel() {
+		return oldName;
+	}
+	
+	public String getFeatureStem() {
+		return featureStem;
+	}
+
+	public void setFeatureStem(String featureStem) {
+		this.featureStem = featureStem;
 	}
 
 	public String getOldName() {
 		return oldName;
 	}
-	
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public void setSynonyms(ArrayList<String> synonyms) {
+		this.synonyms = synonyms;
+	}
+
+	public void setFeatureOccurrences(
+			ArrayList<FeatureOccurrence> featureOccurrences) {
+		this.featureOccurrences = featureOccurrences;
+	}
+
+	public void setSingleWords(ArrayList<String> singleWords) {
+		this.singleWords = singleWords;
+	}
+
 	public void setOccurrence(int occurence) {
 		this.occurrence = occurence;
 	}
@@ -74,8 +112,8 @@ public class Feature implements Comparable, Serializable{
 	 *
 	 * @return the name
 	 */
-	public String getName() {
-		return name;
+	public String getLabel() {
+		return label;
 	}
 	
 	public ArrayList<String> getDistinctDescription() {
@@ -101,8 +139,8 @@ public class Feature implements Comparable, Serializable{
 	}
 
 	public void updateName(String newName) {
-		this.oldName = this.name;
-		this.name = newName;
+		this.oldName = this.label;
+		this.label = newName;
 		this.singleWords.clear();
 		String[] words = newName.split(" ");
 		for(int i = 0; i < words.length; i++){
@@ -121,14 +159,23 @@ public class Feature implements Comparable, Serializable{
 	}
 
 	public void addFeatureOccurrence(String wholeSentence, String docName,
-			long startIndex, long endIndex) {
+			long startIndex, long endIndex, String hierarchy) {
 		if(!distinctDescription.contains(wholeSentence)){
 			distinctDescription.add(wholeSentence);
 		}
-		FeatureOccurrence featureOccurrence = new FeatureOccurrence(docName, startIndex, endIndex, wholeSentence);
+		FeatureOccurrence featureOccurrence = new FeatureOccurrence(docName, startIndex, endIndex, wholeSentence, hierarchy);
 		this.featureOccurrences.add(featureOccurrence);
 		this.occurrence++;
 		
+	}
+
+	public void addFeatureOccurrence(FeatureOccurrence newOccurrence) {
+		if(!distinctDescription.contains(newOccurrence.getContainingSentence())){
+			distinctDescription.add(newOccurrence.getContainingSentence());
+		}
+		
+		this.featureOccurrences.add(newOccurrence);
+		this.occurrence++;
 	}
 	
 }

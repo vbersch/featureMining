@@ -10,8 +10,8 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
+import featureMining.controller.FeatureMining;
 import featureMining.feature.FeatureContainer;
-import featureMining.main.FeatureMining;
 import featureMining.persistence.IPersistenceHandler;
 import gate.Corpus;
 import gate.Factory;

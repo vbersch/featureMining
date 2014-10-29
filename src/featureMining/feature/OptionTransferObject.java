@@ -11,10 +11,12 @@ public class OptionTransferObject implements Serializable{
 	private static final long serialVersionUID = -2006007433101173600L;
 	private String hostName;
 	private String baseUrl;
+	private boolean enableStemming;
 	private String preprocessingName;
 	private String documentationType;
 	private int threadNum;
 	private boolean domainSpecific;
+	
 	private String featureBlacklistPath;
 	private String sentenceBlacklistPath;
 	private ArrayList<String> featureBlacklist;
@@ -34,6 +36,18 @@ public class OptionTransferObject implements Serializable{
 
 	public String getBaseUrl() {
 		return baseUrl;
+	}
+
+	public boolean isEnableStemming() {
+		return enableStemming;
+	}
+
+	public boolean isStemmingEnabled() {
+		return enableStemming;
+	}
+
+	public void setEnableStemming(boolean enableStemming) {
+		this.enableStemming = enableStemming;
 	}
 
 	public String getPreprocessingName() {
@@ -115,6 +129,15 @@ public class OptionTransferObject implements Serializable{
 
 	public void setThreadNum(int threadNum) {
 		this.threadNum = threadNum;
+	}
+
+	public void setEnableStemming(String enableStemming) {
+		if(enableStemming.equals("True")){
+			this.enableStemming = true;
+		}else{
+			this.enableStemming = false;
+		}
+		
 	}
 
 }

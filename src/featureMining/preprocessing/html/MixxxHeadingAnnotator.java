@@ -28,7 +28,7 @@ public class MixxxHeadingAnnotator extends HtmlHeadingAnnotator{
 	@Override
 	public void buildHeadingHierarchy(Document doc){
 		AnnotationSet origAnnots = doc.getAnnotations("Original markups");
-		List sortedAnnots = new ArrayList(origAnnots);
+		List<Annotation> sortedAnnots = new ArrayList<Annotation>(origAnnots);
 		
 		Collections.sort(sortedAnnots , new OffsetComparator());
 				
@@ -39,13 +39,14 @@ public class MixxxHeadingAnnotator extends HtmlHeadingAnnotator{
 				long end = annot.getEndNode().getOffset();
 				if(!gate.Utils.stringFor(doc, start , end).contains("Navigation")){
 					FeatureMap map = Factory.newFeatureMap();
-					if(annot.getType() == "h1"){
-						map.put("hierarchy", "topLevel");
-					}else if(annot.getType() == "h2"){
-						map.put("hierarchy", "secondLevel");
-					}else if(annot.getType() == "h3"){
-						map.put("hierarchy", "thirdLevel");
-					}
+//					if(annot.getType().equals("h1")){
+//						map.put("hierarchy", "topLevel");
+//					}else if(annot.getType().equals("h2")){
+//						map.put("hierarchy", "secondLevel");
+//					}else if(annot.getType().equals("h3")){
+//						map.put("hierarchy", "thirdLevel");
+//					}
+					map.put("hierarchy", annot.getType());
 					gate.Utils.addAnn(origAnnots, start, end, "heading", map);
 				}
 			}

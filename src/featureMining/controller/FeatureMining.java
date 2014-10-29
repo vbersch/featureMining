@@ -1,4 +1,4 @@
-package featureMining.main;
+package featureMining.controller;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -89,7 +89,9 @@ public class FeatureMining {//Singleton
 		try {
 			Gate.init();
 			System.out.println("register directory: " + new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURI().toURL());
+			System.out.println("register directory: " + new File("D:/Gate/plugins/Stemmer_Snowball").toURI().toURL());
 			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURI().toURL());
+			Gate.getCreoleRegister().registerDirectories(new File("D:/Gate/plugins/Stemmer_Snowball").toURI().toURL());
 
 		} catch (GateException e1) {
 			e1.printStackTrace();

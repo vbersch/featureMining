@@ -4,7 +4,7 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import featureMining.main.FeatureMining;
+import featureMining.controller.FeatureMining;
 import featureMining.ui.RootFeatureWindow;
 
 public class GuiListListener implements ListSelectionListener{

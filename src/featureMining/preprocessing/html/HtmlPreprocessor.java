@@ -17,8 +17,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+import featureMining.controller.FeatureMining;
 import featureMining.feature.OptionTransferObject;
-import featureMining.main.FeatureMining;
 import featureMining.preprocessing.IDocumentPreprocessor;
 import gate.Corpus;
 import gate.Document;
@@ -32,6 +32,7 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 	private static Pattern linkPattern = Pattern.compile("href=\"[^>]*\">");
 	private String hostName;
 	private String baseUrl;
+	private String linkBase;
 	private Queue<String> links;
 	private HtmlHeadingAnnotator headingAnnotator;
 	
@@ -42,16 +43,17 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 	@Override
 	public Corpus createAnnotatedCorpus(OptionTransferObject optionsTO) {
 		
+		this.baseUrl = optionsTO.getBaseUrl();
 		if(optionsTO.getDocumentationType() == "Github"){
-			this.baseUrl = "https://github.com";
+			this.linkBase = "https://github.com";
 			this.headingAnnotator = new GithubHeadingAnnotator();
 		}else{
-			this.baseUrl = optionsTO.getBaseUrl();
+			this.linkBase = optionsTO.getBaseUrl();
 		}
 		this.hostName = optionsTO.getHostName(); 
 		
 		try {
-			this.corpus = gate.Factory.newCorpus(this.baseUrl + this.hostName);
+			this.corpus = gate.Factory.newCorpus(this.baseUrl);
 		} catch (ResourceInstantiationException e) {
 			e.printStackTrace();
 		}
@@ -95,7 +97,7 @@ public class HtmlPreprocessor implements IDocumentPreprocessor {
 					.replaceFirst("\".*", "");
 			if (valid(link)) {
 				if (!link.startsWith("http")) {
-					link = baseUrl + link;
+					link = linkBase + link;
 					if (link.contains("#")) {
 						String splitString[] = link.split("#");
 						link = splitString[0];

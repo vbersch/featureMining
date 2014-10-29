@@ -1,6 +1,6 @@
 package featureMining.preprocessing.html;
 
-import featureMining.main.FeatureMining;
+import featureMining.controller.FeatureMining;
 import gate.Document;
 import gate.Factory;
 import gate.FeatureMap;
@@ -78,7 +78,7 @@ public class DocWorker implements Runnable {
 	                response.close();
 	            }
 	        } catch (ClientProtocolException ex) {
-	            // Handle protocol errors
+	            
 	        } catch (IOException ex) {
 	            // Handle I/O errors
 	        }

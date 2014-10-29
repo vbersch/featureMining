@@ -21,10 +21,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import featureMining.controller.FeatureMining;
 import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
 import featureMining.feature.FeatureOccurrence;
-import featureMining.main.FeatureMining;
 import featureMining.persistence.IPersistenceHandler;
 import featureMining.ui.RootFeatureWindow;
 
@@ -69,10 +69,8 @@ public class XmlHandler implements IPersistenceHandler{
 			Element featureElement = (Element) feature;
 			String name;
 			String oldName = null;
-			//int occurrence;
 			
 			name = featureElement.getElementsByTagName("Name").item(0).getTextContent();
-			//occurrence = Integer.parseInt(featureElement.getElementsByTagName("Occurrences").item(0).getTextContent());
 			
 			ArrayList<String> singleWords = new ArrayList<String>();
 			Node wordNode = featureElement.getElementsByTagName("SingleWords").item(0);
@@ -96,11 +94,12 @@ public class XmlHandler implements IPersistenceHandler{
 				long end = Long.parseLong(occurenceElement.getElementsByTagName("EndOffset").item(0).getTextContent());
 				String containingSentence = occurenceElement.getElementsByTagName("ContainingSentence").item(0).getTextContent();
 				String docName = occurenceElement.getElementsByTagName("DocumentName").item(0).getTextContent();
+				String hierarchy = occurenceElement.getElementsByTagName("Hierarchy").item(0).getTextContent();
 				
-				if(newFeature==null){
-					newFeature = new Feature(name, singleWords, containingSentence, docName, start, end);
+				if(newFeature == null){
+					newFeature = new Feature(name, singleWords, containingSentence, docName, start, end, hierarchy);
 				}else{
-					newFeature.addFeatureOccurrence(containingSentence, docName, start, end);
+					newFeature.addFeatureOccurrence(containingSentence, docName, start, end, hierarchy);
 				}
 			}
 			
@@ -183,7 +182,7 @@ public class XmlHandler implements IPersistenceHandler{
 		Element feat = doc.createElement("Feature");
 		
 		Element name = doc.createElement("Name");
-		name.appendChild(doc.createTextNode(feature.getName()));
+		name.appendChild(doc.createTextNode(feature.getLabel()));
 		
 		Element occurrence = doc.createElement("OccurrencesNum");
 		occurrence.appendChild(doc.createTextNode(String.valueOf(feature.getOccurrence())));
@@ -206,6 +205,8 @@ public class XmlHandler implements IPersistenceHandler{
 			end.appendChild(doc.createTextNode(String.valueOf(fOccurrence.getEndOffset())));
 			Element containingSentence = doc.createElement("ContainingSentence");
 			containingSentence.appendChild(doc.createTextNode(fOccurrence.getContainingSentence()));
+			Element hierarchyElement = doc.createElement("Hierarchy");
+			hierarchyElement.appendChild(doc.createTextNode(fOccurrence.getHierarchy()));
 			
 			featureOccurrence.appendChild(docName);
 			featureOccurrence.appendChild(start);

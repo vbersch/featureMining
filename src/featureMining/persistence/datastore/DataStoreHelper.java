@@ -1,9 +1,9 @@
 package featureMining.persistence.datastore;
 
+import featureMining.controller.FeatureMining;
 import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
 import featureMining.feature.FeatureOccurrence;
-import featureMining.main.FeatureMining;
 import gate.AnnotationSet;
 import gate.Corpus;
 import gate.DataStore;
@@ -85,7 +85,8 @@ public final class DataStoreHelper {
 						long start = featOcc.getStartOffset();
 						long end = featOcc.getEndOffset();
 						FeatureMap featureMap = Factory.newFeatureMap();
-						featureMap.put("Name", feature.getName());
+						featureMap.put("Name", feature.getLabel());
+						featureMap.put("Description", featureContainer.getDescriptionText(feature.getLabel()));
 						try {
 							resultSet.add(start, end, "Feature", featureMap);
 						} catch (InvalidOffsetException e) {

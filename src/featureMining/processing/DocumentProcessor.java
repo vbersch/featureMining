@@ -1,8 +1,8 @@
 package featureMining.processing;
 
+import featureMining.controller.FeatureMining;
 import featureMining.feature.FeatureContainer;
 import featureMining.feature.OptionTransferObject;
-import featureMining.main.FeatureMining;
 import featureMining.persistence.SettingsManager;
 import gate.Corpus;
 import gate.Factory;
@@ -27,6 +27,7 @@ public class DocumentProcessor implements ISimpleProcessor{
 				"gate.creole.tokeniser.DefaultTokeniser",
 				"gate.creole.splitter.SentenceSplitter",
 				"gate.creole.POSTagger",
+				"stemmer.SnowballStemmer",
 				"featureMining.processing.pr.DocumentProcessorPR"
 		};
 

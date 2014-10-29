@@ -3,15 +3,10 @@
     <baseUrl>http://mixxx.org/manual/latest/</baseUrl>
     <documentationType>Mixxx</documentationType>
     <domainSpecific>true</domainSpecific>
-    <featureBlacklist>Mixxx</featureBlacklist>
-    <featureBlacklist>Mix</featureBlacklist>
-    <featureBlacklist>bla</featureBlacklist>
+    <enableStemming>true</enableStemming>
     <featureBlacklistPath></featureBlacklistPath>
-    <hostName>/manual/latest/</hostName>
+    <hostName>/manual/latest</hostName>
     <preprocessingName>Html</preprocessingName>
-    <sentenceBlacklist>Mixxx</sentenceBlacklist>
-    <sentenceBlacklist>Mix</sentenceBlacklist>
-    <sentenceBlacklist>bla</sentenceBlacklist>
-    <sentenceBlacklistPath>C:\Users\test\workspace\FeatureMining\blacklists\featureBlacklist.txt</sentenceBlacklistPath>
+    <sentenceBlacklistPath></sentenceBlacklistPath>
     <threadNum>4</threadNum>
 </Settings>

@@ -24,20 +24,22 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import featureMining.controller.FeatureMining;
 import featureMining.feature.OptionTransferObject;
-import featureMining.main.FeatureMining;
 import featureMining.persistence.SettingsManager;
 
 
 
 public class OptionWindow extends JFrame {
 
+	private static final long serialVersionUID = -7014479869774484651L;
 	private String baseUrl;
 	private JFormattedTextField threadField;
 	private JTextField hostField;
 	private JComboBox preprocessingOptions;
 	private JComboBox htmlProcessingOptions;
 	private JComboBox domainProcessingOptions;
+	private JComboBox stemmingComboBox;
 	private JLabel hostLabel;
 	private JPanel labelPane;
 	private JPanel fieldPane;
@@ -201,9 +203,20 @@ public class OptionWindow extends JFrame {
 		domainProcessingOptions.setMaximumSize(new Dimension(Integer.MAX_VALUE, domainProcessingOptions.getPreferredSize().height) );
 		((JLabel)domainProcessingOptions.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
 		
+		String[] stemmingOptions = {"True" , "False"};
+		stemmingComboBox = new JComboBox(stemmingOptions);
+		if(settings.isStemmingEnabled()){
+			stemmingComboBox.setSelectedIndex(0);
+		}else{
+			stemmingComboBox.setSelectedIndex(1);
+		}
+		stemmingComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, stemmingComboBox.getPreferredSize().height) );
+		((JLabel)stemmingComboBox.getRenderer()).setHorizontalAlignment(JLabel.CENTER);
+		
 		fieldPane.add(threadField);
 		fieldPane.add(featureBlPicker);
 		fieldPane.add(sentenceBlPicker);
+		fieldPane.add(stemmingComboBox);
 		fieldPane.add(domainProcessingOptions);
 		fieldPane.add(preprocessingOptions);
 		
@@ -228,6 +241,9 @@ public class OptionWindow extends JFrame {
 				+ "words will not be considered for Feature Mining.");
 		sentenceBlacklistLabel.setMaximumSize(new Dimension(sentenceBlacklistLabel.getPreferredSize()));
 		
+		JLabel stemmingLabel = new JLabel("Enable Stemming: ");
+		stemmingLabel.setMaximumSize(new Dimension(stemmingLabel.getPreferredSize()));
+		
 		JLabel domainLabel = new JLabel("Domain specific: ");
 		domainLabel.setToolTipText("Every Feature shall contain at least one Domain-specific Noun");
 		domainLabel.setMaximumSize(new Dimension(domainLabel.getPreferredSize()));
@@ -244,6 +260,7 @@ public class OptionWindow extends JFrame {
 		labelPane.add(threadLabel);
 		labelPane.add(featureBlacklistLabel);
 		labelPane.add(sentenceBlacklistLabel);
+		labelPane.add(stemmingLabel);
 		labelPane.add(domainLabel);
 		labelPane.add(preprocessingLabel);
 		
@@ -264,14 +281,16 @@ public class OptionWindow extends JFrame {
 				settings.setBaseUrl(this.baseUrl);
 			}
 			
-			Pattern hostPattern = Pattern.compile("//.*");
-			Matcher hostMatcher = hostPattern.matcher(this.baseUrl);
-			hostMatcher.find();
-			settings.setHostName(hostMatcher.group().replace("//github.com", ""));
+			//Pattern hostPattern = Pattern.compile("//.*");
+			//Matcher hostMatcher = hostPattern.matcher(this.baseUrl);
+			//hostMatcher.find();
+			//hostMatcher.group()
+			settings.setHostName("hostName");
 			settings.setDomainSpecific(true);
 			settings.setDocumentationType("General");
 			settings.setPreprocessingName("Html");
 			settings.setThreadNum(4);
+			settings.setEnableStemming(true);
 		}
 		
 	}
@@ -328,5 +347,9 @@ public class OptionWindow extends JFrame {
 
 	public String getSentenceBlacklistPath() {
 		return this.sentenceBlField.getText();
+	}
+
+	public String getEnableStemming() {
+		return (String)stemmingComboBox.getSelectedItem();
 	}
 }

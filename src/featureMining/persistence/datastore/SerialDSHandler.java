@@ -3,8 +3,8 @@ package featureMining.persistence.datastore;
 import java.io.File;
 import java.net.MalformedURLException;
 
+import featureMining.controller.FeatureMining;
 import featureMining.feature.FeatureContainer;
-import featureMining.main.FeatureMining;
 import featureMining.persistence.IPersistenceHandler;
 import featureMining.ui.RootFeatureWindow;
 import gate.Corpus;

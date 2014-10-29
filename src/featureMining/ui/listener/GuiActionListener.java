@@ -16,8 +16,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 
+import featureMining.controller.FeatureMining;
 import featureMining.feature.OptionTransferObject;
-import featureMining.main.FeatureMining;
 import featureMining.persistence.SettingsManager;
 import featureMining.persistence.datastore.LuceneDSHandler;
 import featureMining.persistence.datastore.SerialDSHandler;
@@ -135,6 +135,7 @@ public class GuiActionListener implements ActionListener{
 				OptionTransferObject optionsTO = SettingsManager.getOptions();
 				optionsTO.setBaseUrl(optionWindow.getBaseUrl());
 				optionsTO.setDocumentationType(optionWindow.getDocumentationType());
+				optionsTO.setEnableStemming(optionWindow.getEnableStemming());
 				optionsTO.setDomainSpecific(optionWindow.getDomainOptions());
 				optionsTO.setHostName(optionWindow.getHostName());
 				optionsTO.setPreprocessingName(optionWindow.getPreprocessor());

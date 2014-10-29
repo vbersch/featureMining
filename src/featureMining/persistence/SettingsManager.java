@@ -35,12 +35,16 @@ public class SettingsManager {
 	}
 	
 	public static void saveOptions(){
+		File settingsFile = new File(fileName);
+		if(settingsFile.exists()){
+			settingsFile.delete();
+		}
 		try {
             JAXBContext context = JAXBContext.newInstance(OptionTransferObject.class);
             Marshaller marshaller = context.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 
-            marshaller.marshal(options, new File(fileName));
+            marshaller.marshal(options, settingsFile);
         } catch (JAXBException e) {
             e.printStackTrace();
             System.out.println("Couldn´t save Settings...");

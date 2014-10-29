@@ -46,7 +46,6 @@ public class GithubHeadingAnnotator extends HtmlHeadingAnnotator{
 			if(divId != null){
 				if(divId.equals("wiki-body")){
 					contentBody = gate.Utils.getContainedAnnotations(origAnnots, divAnnot);
-					String body = gate.Utils.stringFor(doc, gate.Utils.start(contentBody), gate.Utils.end(contentBody));
 					addHeadings(doc, origAnnots, contentBody);
 				}
 			}
@@ -59,7 +58,7 @@ public class GithubHeadingAnnotator extends HtmlHeadingAnnotator{
 		}
 
 		System.out.println("adding content annotations");
-		this.addContentAnnotations(doc, contentBody);
+		this.addContentAnnotations(doc, origAnnots);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -118,7 +117,8 @@ public class GithubHeadingAnnotator extends HtmlHeadingAnnotator{
 				}
 			}else{
 				FeatureMap map = Factory.newFeatureMap();
-				gate.Utils.addAnn(origAnnots, start, gate.Utils.end(contentBody), "content", map);
+				long end = gate.Utils.end(contentBody);
+				gate.Utils.addAnn(origAnnots, start, end, "content", map);
 			}
 		}
 	}

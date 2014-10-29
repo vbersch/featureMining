@@ -18,4 +18,17 @@
       </plugin>
     </plugins>
   </build>
+  <dependencies>
+  	<dependency>
+  		<groupId>uk.ac.gate</groupId>
+  		<artifactId>gate-core</artifactId>
+  		<version>8.0</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.apache.httpcomponents</groupId>
+  		<artifactId>httpcomponents-client</artifactId>
+  		<version>4.3.5</version>
+  		<type>pom</type>
+  	</dependency>
+  </dependencies>
 </project>

@@ -15,15 +15,13 @@ import java.util.List;
 
 
 public class HtmlHeadingAnnotator {
-	
-	private ArrayList<String> headings;
+
 	private HashMap<String, Integer> validTags; 
 	private Document mainDoc;
 	
 	
 	public HtmlHeadingAnnotator(){
 		mainDoc = null;
-		headings = new ArrayList<String>();
 		validTags = new HashMap<String, Integer>();
 		validTags.put("h1", 5);
 		validTags.put("h2", 4);
@@ -52,7 +50,7 @@ public class HtmlHeadingAnnotator {
 	
 	public void buildHeadingHierarchy(Document doc) {
 		AnnotationSet origAnnots = doc.getAnnotations("Original markups");
-		List sortedAnnots = new ArrayList(origAnnots);
+		List<Annotation> sortedAnnots = new ArrayList<Annotation>(origAnnots);
 		
 		Collections.sort(sortedAnnots , new OffsetComparator());
 				
@@ -69,7 +67,7 @@ public class HtmlHeadingAnnotator {
 	
 	public void addContentAnnotations(Document doc , AnnotationSet origAnnots){
 		AnnotationSet headings = origAnnots.get("heading");
-		List sortedHeadings = new ArrayList(headings);
+		List<Annotation> sortedHeadings = new ArrayList<Annotation>(headings);
 		
 		Collections.sort(sortedHeadings, new OffsetComparator());
 		

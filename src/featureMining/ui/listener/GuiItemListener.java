@@ -5,7 +5,7 @@ import java.awt.event.ItemListener;
 
 import javax.swing.JComboBox;
 
-import featureMining.main.FeatureMining;
+import featureMining.controller.FeatureMining;
 import featureMining.ui.RootFeatureWindow;
 
 public class GuiItemListener implements ItemListener{
