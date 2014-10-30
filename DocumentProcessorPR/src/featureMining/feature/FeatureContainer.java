@@ -52,32 +52,32 @@ public class FeatureContainer implements Serializable{
 		this.linkNum = linkNum;
 	}
 
-	/**
-	 * Adds the.
-	 *
-	 * @param featureString the feature string
-	 */
-	public void addFeature(String featureString, String wholeSentence, String docName, long startIndex, long endIndex, String hierarchy){
-		String newFeature = "";
-		ArrayList<String> singleWords = new ArrayList<String>();
-		//filter some words
-		String[] words = featureString.split(" ");
-		for(String word : words){
-			if(word.matches("[a-zA-Z]*") && !word.matches("[a-zA-Z]")){ // only letters and more than one
-				newFeature += word + " ";
-				singleWords.add(word);
-			}
-		}
-		newFeature = newFeature.trim();
-		
-		if(newFeature != ""){
-			if(this.featureStorage.containsKey(newFeature)){
-				this.featureStorage.get(newFeature).addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex, hierarchy);
-			}else{
-				this.featureStorage.put(newFeature , new Feature(newFeature, singleWords, wholeSentence, docName, startIndex, endIndex, hierarchy));
-			}
-		}
-	}
+//	/**
+//	 * Adds the.
+//	 *
+//	 * @param featureString the feature string
+//	 */
+//	public void addFeature(String featureString, String wholeSentence, String docName, long startIndex, long endIndex, String hierarchy){
+//		String newFeature = "";
+//		ArrayList<String> singleWords = new ArrayList<String>();
+//		//filter some words
+//		String[] words = featureString.split(" ");
+//		for(String word : words){
+//			if(word.matches("[a-zA-Z]*") && !word.matches("[a-zA-Z]")){ // only letters and more than one
+//				newFeature += word + " ";
+//				singleWords.add(word);
+//			}
+//		}
+//		newFeature = newFeature.trim();
+//		
+//		if(newFeature != ""){
+//			if(this.featureStorage.containsKey(newFeature)){
+//				this.featureStorage.get(newFeature).addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex, hierarchy);
+//			}else{
+//				this.featureStorage.put(newFeature , new Feature(newFeature, singleWords, wholeSentence, docName, startIndex, endIndex, hierarchy));
+//			}
+//		}
+//	}
 
 	/**
 	 * Gets the feature storage.
@@ -99,6 +99,7 @@ public class FeatureContainer implements Serializable{
 		Feature feature = this.featureDictionary.get(key);
 		info += feature.getLabel();
 		info += "\n#occurrences: \t" + feature.getOccurrence();
+		info += "\nStem: " + feature.getFeatureStem();
 		if(feature.getOldLabel() != null){
 			info += "\nold Name: " + feature.getOldLabel();
 		}
@@ -165,7 +166,9 @@ public class FeatureContainer implements Serializable{
 	public void addFeature(ArrayList<Annotation> featureAnnots, String wholeSentence, Document doc, String hierarchy) {
 		String featureString = "";
 		String featureStem = "";
-		ArrayList<String> singleWords = new ArrayList<String>();
+		ArrayList<String> singleStemWords = new ArrayList<String>();
+		ArrayList<String> singleFeatureWords = new ArrayList<String>();
+		ArrayList<String> singleWords;
 		//filter some words
 		for(Annotation token : featureAnnots){
 			String word = token.getFeatures().get("string").toString();
@@ -173,7 +176,8 @@ public class FeatureContainer implements Serializable{
 			if(word.matches("[a-zA-Z]*") && !word.matches("[a-zA-Z]")){
 				featureString += word + " ";
 				featureStem += stem + " ";
-				singleWords.add(stem);
+				singleStemWords.add(stem);
+				singleFeatureWords.add(word);
 			}
 		}
 		
@@ -183,7 +187,16 @@ public class FeatureContainer implements Serializable{
 		long startIndex = featureAnnots.get(0).getStartNode().getOffset();
 		long endIndex = featureAnnots.get(featureAnnots.size()-1).getEndNode().getOffset();
 		
-		if(!featureStem.equals("")){
+		String identifier = "";
+		if(this.getOptions().isEnableStemming()){
+			identifier = featureStem;
+			singleWords = singleStemWords;
+		}else{
+			identifier = featureString;
+			singleWords = singleFeatureWords;
+		}
+		
+		if(!identifier.equals("")){
 			
 			FeatureOccurrence newOccurrence = new FeatureOccurrence();
 			newOccurrence.setContainingSentence(wholeSentence);
@@ -193,8 +206,8 @@ public class FeatureContainer implements Serializable{
 			newOccurrence.setEndOffset(endIndex);
 			newOccurrence.setHierarchy(hierarchy);
 			
-			if(this.featureStorage.containsKey(featureStem)){
-				this.featureStorage.get(featureStem).addFeatureOccurrence(newOccurrence);
+			if(this.featureStorage.containsKey(identifier)){
+				this.featureStorage.get(identifier).addFeatureOccurrence(newOccurrence);
 			}else{
 				Feature newFeature = new Feature();
 				newFeature.setFeatureStem(featureStem);

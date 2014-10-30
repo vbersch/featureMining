@@ -18,14 +18,9 @@
 
 package featureMining.processing.pr;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
+import featureMining.feature.FeatureOccurrence;
 import gate.Annotation;
 import gate.AnnotationSet;
 import gate.Corpus;
@@ -37,6 +32,17 @@ import gate.creole.ExecutionException;
 import gate.creole.ResourceInstantiationException;
 import gate.creole.metadata.CreoleResource;
 import gate.util.OffsetComparator;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class is the implementation of the resource DOCUMENTPROCESSORPR.
@@ -51,11 +57,20 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 	private static FeatureContainer featureContainer;
 	private static int docNum;
 	private static int currentDoc;
+	private static FileWriter fileWriter;
 
 	public Resource init() throws ResourceInstantiationException {
+		String path = System.getProperty("user.dir") + "/DocumentProcessorPR/processingLog.log";
+		try {
+			fileWriter = new FileWriter(new File(path));
+			docNum = featureContainer.getLinkNum();
+			currentDoc = 0;
 		
-		docNum = featureContainer.getLinkNum();
-		currentDoc = 0;
+			fileWriter.write("init processing resource...");
+			fileWriter.write("\n\n\nMining Features in heading Annotations\n--------------------------------------------\n\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return this;
 	}
 
@@ -64,14 +79,34 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 				.get("heading");
 
 		Iterator<Annotation> it = headings.iterator();
+		
+		try {
+			fileWriter.write("\nprocessing for Document: " + document.getName());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		while (it.hasNext()) {
 			Annotation next = it.next();
 			this.parseHeading(next, document, featureContainer);
 		}
-		this.addFeatureOccurrences(document, featureContainer);
+		
 		
 		if(currentDoc == docNum - 1){
-			this.corpus.getFeatures().put("result", featureContainer);
+			//last processing resource instance parses all documents and matches the Features
+			try {
+				fileWriter.write("\n\n\nMatching the Features in content Annotations\n--------------------------------------------\n\n\n");
+				for(Document doc : this.corpus){
+					fileWriter.write("Adding Feature Occurrences for Document " + doc.getName() + "\n");
+					this.addFeatureOccurrences(doc, featureContainer);
+				}
+				this.corpus.getFeatures().put("result", featureContainer);
+			
+				fileWriter.close();
+			} catch (IOException e) {
+				
+				e.printStackTrace();
+			}
 		}else{
 			currentDoc++;
 		}
@@ -160,30 +195,92 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 	
 	private void addFeatureOccurrences(Document doc , FeatureContainer featureContainer){
 		AnnotationSet contents = doc.getAnnotations("Original markups").get("content");
+		AnnotationSet tokens = doc.getAnnotations().get("Token");
 		List<Annotation> sortedContents = new ArrayList<Annotation>(contents);
 		
 		Collections.sort(sortedContents, new OffsetComparator());
 		
-		for(int i = 0; i < sortedContents.size(); i++ ){
-			Annotation contentAnnot = (Annotation) sortedContents.get(i);
-			for(String feature : featureContainer.getFeatureStorage().keySet()){
-				String content = gate.Utils.stringFor(doc, contentAnnot.getStartNode().getOffset(), contentAnnot.getEndNode().getOffset());
-				Pattern featurePattern = Pattern.compile(feature);
-				Matcher featureMatcher = featurePattern.matcher(content);
-				while(featureMatcher.find()){
-					long startIndex = contentAnnot.getStartNode().getOffset() + (long)featureMatcher.start();
-					long endIndex = contentAnnot.getStartNode().getOffset() + (long)featureMatcher.end();
-					Iterator<Annotation> sentenceIt = doc.getAnnotations().get(startIndex, endIndex).get("Sentence").iterator();
-					while(sentenceIt.hasNext()){
-						Annotation sentence = (Annotation) sentenceIt.next();
-						String wholeSentence = gate.Utils.stringFor(doc, sentence.getStartNode().getOffset(), sentence.getEndNode().getOffset());
-						featureContainer.addOccurence(feature, wholeSentence, doc.getName(), startIndex, endIndex, "0");
+		if(featureContainer.getOptions().isEnableStemming()){
+		
+			for(int i = 0; i < sortedContents.size(); i++ ){
+				Annotation contentAnnot = (Annotation) sortedContents.get(i);
+				AnnotationSet contentTokens = tokens.get(contentAnnot.getStartNode().getOffset() , contentAnnot.getEndNode().getOffset());
+				
+				ArrayList<Annotation> sortedTokens = new ArrayList<Annotation>(contentTokens);
+				Collections.sort(sortedTokens , new OffsetComparator());
+				for(int j = 0; j < sortedTokens.size(); j++){
+					Annotation token = sortedTokens.get(j);
+					String tokenStem = token.getFeatures().get("stem").toString();
+					for(Map.Entry<String,Feature> e : featureContainer.getFeatureStorage().entrySet()){
+						Feature feature = e.getValue();
+						if(feature.getFeatureStem().startsWith(tokenStem)){
+							checkForOccurrence(doc, feature, sortedTokens, j);
+						}
+					}
+				}
+			}
+		}else{
+			for(int i = 0; i < sortedContents.size(); i++ ){
+				Annotation contentAnnot = (Annotation) sortedContents.get(i);
+				for(String feature : featureContainer.getFeatureStorage().keySet()){
+					String content = gate.Utils.stringFor(doc, contentAnnot.getStartNode().getOffset(), contentAnnot.getEndNode().getOffset());
+					Pattern featurePattern = Pattern.compile(feature);
+					Matcher featureMatcher = featurePattern.matcher(content);
+					while(featureMatcher.find()){
+						long startIndex = contentAnnot.getStartNode().getOffset() + (long)featureMatcher.start();
+						long endIndex = contentAnnot.getStartNode().getOffset() + (long)featureMatcher.end();
+						Iterator<Annotation> sentenceIt = doc.getAnnotations().get(startIndex, endIndex).get("Sentence").iterator();
+						while(sentenceIt.hasNext()){
+							Annotation sentence = (Annotation) sentenceIt.next();
+							String wholeSentence = gate.Utils.stringFor(doc, sentence.getStartNode().getOffset(), sentence.getEndNode().getOffset());
+							featureContainer.addOccurence(feature, wholeSentence, doc.getName(), startIndex, endIndex, "content");
+						}
 					}
 				}
 			}
 		}
 	}
 	
+
+	private int checkForOccurrence(Document doc, Feature feature, ArrayList<Annotation> sortedTokens, int index) {
+		String featureStem = feature.getFeatureStem();
+		String[] splitStem = featureStem.split(" ");
+		int size = splitStem.length;
+		String candidateStem = "";
+		String candidateFeatureString = "";
+		if(index + size < sortedTokens.size()){
+			for(int i = index; i < index + size; i++){
+				candidateStem += sortedTokens.get(i).getFeatures().get("stem") + " ";
+				candidateFeatureString += sortedTokens.get(i).getFeatures().get("string") + " ";
+			}
+			
+			candidateStem = candidateStem.trim();
+			candidateFeatureString = candidateFeatureString.trim();
+			if(featureStem.equals(candidateStem)){
+				long startIndex = sortedTokens.get(index).getStartNode().getOffset();
+				long endIndex = sortedTokens.get(index + size - 1).getEndNode().getOffset();
+				String wholeSentence = "";
+				Iterator<Annotation> sentenceIt = doc.getAnnotations().get(startIndex, endIndex).get("Sentence").iterator();
+				while(sentenceIt.hasNext()){
+					Annotation sentence = (Annotation) sentenceIt.next();
+					wholeSentence = gate.Utils.stringFor(doc, sentence.getStartNode().getOffset(), sentence.getEndNode().getOffset());
+				}
+				
+				FeatureOccurrence newOccurrence = new FeatureOccurrence();
+				newOccurrence.setContainingSentence(wholeSentence);
+				newOccurrence.setOccurrenceName(candidateFeatureString);
+				newOccurrence.setDocumentName(doc.getName());
+				newOccurrence.setStartOffset(startIndex);
+				newOccurrence.setEndOffset(endIndex);
+				newOccurrence.setHierarchy("content");
+				
+				feature.addFeatureOccurrence(newOccurrence);
+				return index + size;
+			}
+		}
+		return 0;
+	}
+
 	@Override
 	public Corpus getCorpus() {
 		return this.corpus;
