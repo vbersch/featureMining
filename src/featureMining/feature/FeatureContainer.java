@@ -11,6 +11,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -51,33 +53,6 @@ public class FeatureContainer implements Serializable{
 	public void setLinkNum(int linkNum) {
 		this.linkNum = linkNum;
 	}
-
-//	/**
-//	 * Adds the.
-//	 *
-//	 * @param featureString the feature string
-//	 */
-//	public void addFeature(String featureString, String wholeSentence, String docName, long startIndex, long endIndex, String hierarchy){
-//		String newFeature = "";
-//		ArrayList<String> singleWords = new ArrayList<String>();
-//		//filter some words
-//		String[] words = featureString.split(" ");
-//		for(String word : words){
-//			if(word.matches("[a-zA-Z]*") && !word.matches("[a-zA-Z]")){ // only letters and more than one
-//				newFeature += word + " ";
-//				singleWords.add(word);
-//			}
-//		}
-//		newFeature = newFeature.trim();
-//		
-//		if(newFeature != ""){
-//			if(this.featureStorage.containsKey(newFeature)){
-//				this.featureStorage.get(newFeature).addFeatureOccurrence(wholeSentence, docName, startIndex, endIndex, hierarchy);
-//			}else{
-//				this.featureStorage.put(newFeature , new Feature(newFeature, singleWords, wholeSentence, docName, startIndex, endIndex, hierarchy));
-//			}
-//		}
-//	}
 
 	/**
 	 * Gets the feature storage.
@@ -122,13 +97,20 @@ public class FeatureContainer implements Serializable{
 	}
 
 	public void deleteFeature(String key) {
-		this.featureStorage.remove(key);
+		Feature f = this.featureDictionary.get(key);
+		this.featureStorage.remove(f.getFeatureStem());
+		while(featureDictionary.values().remove(f));
+//		for(Map.Entry<String, Feature> e : this.featureDictionary.entrySet()){
+//			if(e.getValue() == f){
+//				this.featureDictionary.remove(e.getKey());
+//			}
+//		}
 	}
 
 	public void changeFeature(String oldName, String newName) {
-		Feature f = this.featureStorage.remove(oldName);
+		Feature f = this.featureDictionary.get(oldName);
 		f.updateName(newName);
-		this.featureStorage.put(newName, f);
+		this.featureDictionary.put(newName, f);
 	}
 	
 	public static String packContainer(FeatureContainer featureContainer){
@@ -166,9 +148,7 @@ public class FeatureContainer implements Serializable{
 	public void addFeature(ArrayList<Annotation> featureAnnots, String wholeSentence, Document doc, String hierarchy) {
 		String featureString = "";
 		String featureStem = "";
-		ArrayList<String> singleStemWords = new ArrayList<String>();
-		ArrayList<String> singleFeatureWords = new ArrayList<String>();
-		ArrayList<String> singleWords;
+		ArrayList<String> singleWords = new ArrayList<String>();
 		//filter some words
 		for(Annotation token : featureAnnots){
 			String word = token.getFeatures().get("string").toString();
@@ -176,8 +156,7 @@ public class FeatureContainer implements Serializable{
 			if(word.matches("[a-zA-Z]*") && !word.matches("[a-zA-Z]")){
 				featureString += word + " ";
 				featureStem += stem + " ";
-				singleStemWords.add(stem);
-				singleFeatureWords.add(word);
+				singleWords.add(word);
 			}
 		}
 		
@@ -190,10 +169,8 @@ public class FeatureContainer implements Serializable{
 		String identifier = "";
 		if(this.getOptions().isEnableStemming()){
 			identifier = featureStem;
-			singleWords = singleStemWords;
 		}else{
 			identifier = featureString;
-			singleWords = singleFeatureWords;
 		}
 		
 		if(!identifier.equals("")){
@@ -214,10 +191,28 @@ public class FeatureContainer implements Serializable{
 				newFeature.setLabel(featureString);
 				newFeature.setSingleWords(singleWords);
 				newFeature.addFeatureOccurrence(newOccurrence);
-				this.featureStorage.put(featureStem , newFeature);
+				this.featureStorage.put(identifier , newFeature);
+				this.featureDictionary.put(featureStem, this.featureStorage.get(identifier));
 			}
 			
-			this.featureDictionary.put(featureString, this.featureStorage.get(featureStem));
+			this.featureDictionary.put(featureString, this.featureStorage.get(identifier));
 		}
+	}
+
+	public ArrayList<String> getDistinctLabels(String key) {
+		Feature feature = this.featureDictionary.get(key);
+		ArrayList<String> distinctLabels = new ArrayList<String>();
+		for(FeatureOccurrence fOccurrence : feature.getFeatureOccurrences()){
+			if(!fOccurrence.getOccurrenceName().equals(key) && !distinctLabels.contains(fOccurrence.getOccurrenceName())){
+				distinctLabels.add(fOccurrence.getOccurrenceName());
+			}
+		}
+		return distinctLabels;
+	}
+
+	public void addOccurrence(String feature,
+			FeatureOccurrence featureOccurrence) {
+		this.featureDictionary.get(feature).addFeatureOccurrence(featureOccurrence);
+		
 	}
 }

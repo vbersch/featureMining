@@ -14,11 +14,15 @@ public class GuiListListener implements ListSelectionListener{
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		RootFeatureWindow rootWindow = FeatureMining.getSingleton().getRootWindow(); 
-		JList list = rootWindow.getFeatureList();
-		if(list.getSelectedIndex() != -1){
-			rootWindow.getEditBox().setVisible(true);
-			rootWindow.getInfoTextArea().setText(rootWindow.getFeatureContainer().getInfoText((String) list.getSelectedValue()));
-			rootWindow.getDescTextArea().setText(rootWindow.getFeatureContainer().getDescriptionText((String) list.getSelectedValue()));
+		JList<String> list = (JList<String>) e.getSource();
+		if(list.getName().equals("featureList")){
+			if(list.getSelectedIndex() != -1){
+				rootWindow.updateEditBoxContent(list.getSelectedValue());
+				rootWindow.getInfoTextArea().setText(rootWindow.getFeatureContainer().getInfoText((String) list.getSelectedValue()));
+				rootWindow.getDescTextArea().setText(rootWindow.getFeatureContainer().getDescriptionText((String) list.getSelectedValue()));
+			}
+		}else if(list.getName().equals("labelChoosingList")){
+			rootWindow.getNewNameField().setText(list.getSelectedValue());
 		}
 	}
 }

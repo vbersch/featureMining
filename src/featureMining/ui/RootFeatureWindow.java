@@ -30,6 +30,8 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import featureMining.feature.Feature;
 import featureMining.feature.FeatureContainer;
@@ -40,7 +42,7 @@ import featureMining.ui.listener.GuiActionListener;
 import featureMining.ui.listener.GuiItemListener;
 import featureMining.ui.listener.GuiListListener;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Class RootFeatureWindow.
  */
@@ -60,8 +62,10 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	private JTextField urlField;
 
 	/** The feature list. */
-	private JList featureList;
-
+	private JList<String> featureList;
+	
+	private JList<String> labelChoosingList;
+	
 	/** The info text area. */
 	private JTextArea infoTextArea;
 
@@ -123,6 +127,7 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		featureList.setVisibleRowCount(5);
 		JScrollPane listScrollPane = new JScrollPane(featureList);
 		featureList.addListSelectionListener(guiListListener);
+		featureList.setName("featureList");
 
 		JButton fireButton = new JButton("mine URL");
 		fireButton.setEnabled(true);
@@ -155,7 +160,7 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		this.editBox = this.createEditBox();
 		editBox.setVisible(false);
 		listPane.add(listScrollPane);
-		listPane.add(Box.createHorizontalStrut(20));
+		//listPane.add(Box.createVerticalStrut(20));
 		listPane.add(editBox);
 		listPane.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 		
@@ -234,8 +239,18 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 	private JPanel createEditBox() {
 		JPanel editBox = new JPanel(new BorderLayout());
-		//editBox.setMaximumSize(new Dimension(50,50));
 		
+		DefaultListModel<String> listModel = new DefaultListModel<String>();
+
+		labelChoosingList = new JList<String>(listModel);
+		labelChoosingList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		labelChoosingList.setVisibleRowCount(5);
+		labelChoosingList.addListSelectionListener(guiListListener);
+		labelChoosingList.setName("labelChoosingList");
+		JScrollPane listScrollPane = new JScrollPane(labelChoosingList);
+		
+		editBox.add(listScrollPane , BorderLayout.CENTER);
+
 		JButton changeButton = new JButton("Change");
 		changeButton.addActionListener(guiActionListener);
 		changeButton.setName("changeButton");
@@ -256,9 +271,8 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		buttonPane.add(Box.createHorizontalStrut(5));
 		buttonPane.add(changeButton);
 		buttonPane.add(deleteButton);
-		buttonPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		
-		editBox.add(buttonPane , BorderLayout.PAGE_END);
+		editBox.add(buttonPane, BorderLayout.PAGE_END);
 		return editBox;
 	}
 
@@ -281,6 +295,7 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 
 		return scrollPane;
 	}
+
 
 	/**
 	 * Creates the desc text area.
@@ -455,7 +470,7 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 	 *
 	 * @return the feature list
 	 */
-	public JList getFeatureList() {
+	public JList<String> getFeatureList() {
 		return featureList;
 	}
 
@@ -483,7 +498,7 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		DefaultListModel<String> model = (DefaultListModel<String>) this.featureList.getModel();
 		model.clear();
 		
-		List<Feature> sortedFeatures = new ArrayList<Feature>(featureContainer.getFeatureStorage().values());
+		ArrayList<Feature> sortedFeatures = new ArrayList<Feature>(featureContainer.getFeatureStorage().values());
 		Collections.sort(sortedFeatures);
 		
 		for (Feature feature : sortedFeatures) {
@@ -501,4 +516,14 @@ public class RootFeatureWindow extends JFrame implements ActionListener {
 		
 	}
 
+	public void updateEditBoxContent(String key) {
+		editBox.setVisible(true);
+		DefaultListModel<String> model = (DefaultListModel<String>) this.labelChoosingList.getModel();
+		model.clear();
+		
+		ArrayList<String> distinctLabels = featureContainer.getDistinctLabels(key);
+		for(String label : distinctLabels){
+			model.addElement(label);
+		}
+	}
 }

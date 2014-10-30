@@ -3,7 +3,7 @@
     <baseUrl>http://mixxx.org/manual/latest/</baseUrl>
     <documentationType>Mixxx</documentationType>
     <domainSpecific>true</domainSpecific>
-    <enableStemming>false</enableStemming>
+    <enableStemming>true</enableStemming>
     <featureBlacklistPath></featureBlacklistPath>
     <hostName>/manual/latest</hostName>
     <preprocessingName>Html</preprocessingName>

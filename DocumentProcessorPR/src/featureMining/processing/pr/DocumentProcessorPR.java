@@ -233,7 +233,14 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 						while(sentenceIt.hasNext()){
 							Annotation sentence = (Annotation) sentenceIt.next();
 							String wholeSentence = gate.Utils.stringFor(doc, sentence.getStartNode().getOffset(), sentence.getEndNode().getOffset());
-							featureContainer.addOccurence(feature, wholeSentence, doc.getName(), startIndex, endIndex, "content");
+							FeatureOccurrence featureOccurrence = new FeatureOccurrence();
+							featureOccurrence.setStartOffset(startIndex);
+							featureOccurrence.setEndOffset(endIndex);
+							featureOccurrence.setHierarchy("content");
+							featureOccurrence.setContainingSentence(wholeSentence);
+							featureOccurrence.setDocumentName(doc.getName());
+							featureOccurrence.setOccurrenceName(feature);
+							featureContainer.addOccurrence(feature, featureOccurrence);
 						}
 					}
 				}
