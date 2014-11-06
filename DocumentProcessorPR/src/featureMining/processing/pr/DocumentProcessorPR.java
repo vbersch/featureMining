@@ -1,21 +1,3 @@
-/*
- *  DocumentProcessorPR.java
- *
- * Copyright (c) 2000-2012, The University of Sheffield.
- *
- * This file is part of GATE (see http://gate.ac.uk/), and is free
- * software, licenced under the GNU Library General Public License,
- * Version 3, 29 June 2007.
- *
- * A copy of this licence is included in the distribution in the file
- * licence.html, and is also available at http://gate.ac.uk/gate/licence.html.
- *
- *  test, 3/10/2014
- *
- * For details on the configuration options, see the user guide:
- * http://gate.ac.uk/cgi-bin/userguide/sec:creole-model:config
- */
-
 package featureMining.processing.pr;
 
 import featureMining.feature.Feature;
@@ -48,17 +30,35 @@ import java.util.regex.Pattern;
  * This class is the implementation of the resource DOCUMENTPROCESSORPR.
  */
 @CreoleResource(name = "DocumentProcessorPR", 
-				comment = "A processing Ressource to mine the Features of a Gate Corpus")
+				comment = "A processing Ressource to mine the Features of a Gate Corpus") //Creole Annotation
 public class DocumentProcessorPR extends AbstractProcessingResource implements LanguageAnalyser{
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 4408363290028424392L;
+	
+	/** The corpus. */
 	private Corpus corpus;
+	
+	/** The document. */
 	private Document document;
+	
+	/** The feature container. */
 	private static FeatureContainer featureContainer;
+	
+	/** The doc num. */
 	private static int docNum;
+	
+	/** The current doc. */
 	private static int currentDoc;
+	
+	/** The file writer. */
 	private static FileWriter fileWriter;
 
+	
+	/* (non-Javadoc)
+	 * @see gate.creole.AbstractProcessingResource#init()
+	 * initializes the Processing Resource
+	 */
 	public Resource init() throws ResourceInstantiationException {
 		String path = System.getProperty("user.dir") + "/DocumentProcessorPR/processingLog.log";
 		try {
@@ -74,6 +74,14 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 		return this;
 	}
 
+	/* (non-Javadoc)
+	 * @see gate.creole.AbstractProcessingResource#execute()
+	 * Here, the actual Feature Mining is controlled.
+	 * At first, every PR Instance parses their Gate 
+	 * Document and mines Features from the annotated 
+	 * Headings. At the end, the last Instance matches
+	 * all found Features with the annotated contents.
+	 */
 	public void execute() throws ExecutionException {
 		AnnotationSet headings = document.getAnnotations("Original markups")
 				.get("heading");
@@ -91,7 +99,6 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 			this.parseHeading(next, document, featureContainer);
 		}
 		
-		
 		if(currentDoc == docNum - 1){
 			//last processing resource instance parses all documents and matches the Features
 			try {
@@ -101,10 +108,8 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 					this.addFeatureOccurrences(doc, featureContainer);
 				}
 				this.corpus.getFeatures().put("result", featureContainer);
-			
 				fileWriter.close();
 			} catch (IOException e) {
-				
 				e.printStackTrace();
 			}
 		}else{
@@ -112,18 +117,24 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 		}
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	/**
+	 * Parses all Heading Tags of a Document and 
+	 * adds all found Features to the featureContainer.
+	 *
+	 * @param next the next
+	 * @param doc the doc
+	 * @param featureContainer the feature container
+	 */
 	private void parseHeading(Annotation next, Document doc, FeatureContainer featureContainer) {
 		AnnotationSet tokens = doc.getAnnotations().get("Token");
 		long start = next.getStartNode().getOffset();
 		long end = next.getEndNode().getOffset();
 		String wholeSentence = gate.Utils.stringFor(doc, start, end);
 		String hierarchy = next.getFeatures().get("hierarchy").toString();
-		hierarchy = "bla";
 		if(containsBlacklistWord(wholeSentence , featureContainer.getOptions().getSentenceBlacklist())){
 			return;
 		}
-		List sortedTokens = new ArrayList(tokens.getContained(next.getStartNode().getOffset(), next.getEndNode().getOffset()));
+		List<Annotation> sortedTokens = new ArrayList<Annotation>(tokens.getContained(next.getStartNode().getOffset(), next.getEndNode().getOffset()));
 		Collections.sort(sortedTokens, new OffsetComparator());
 		int i = 0;
 		while(i < sortedTokens.size()) {
@@ -167,7 +178,7 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 				String featureString = gate.Utils.stringFor(doc,
 				first.getStartNode().getOffset(), last.getEndNode().getOffset());
 				if(!containsBlacklistWord(featureString, featureContainer.getOptions().getFeatureBlacklist())){
-					featureAnnots = new ArrayList(tokens.get(first.getStartNode().getOffset(), last.getEndNode().getOffset()));
+					featureAnnots = new ArrayList<Annotation>(tokens.get(first.getStartNode().getOffset(), last.getEndNode().getOffset()));
 					Collections.sort(featureAnnots , new OffsetComparator());
 					featureContainer.addFeature(featureAnnots, wholeSentence, doc, hierarchy);
 				}
@@ -177,6 +188,14 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 		}
 	}
 	
+	/**
+	 * Checks if a string contains one Word of the
+	 * Blacklist.
+	 *
+	 * @param candidate the candidate
+	 * @param sentenceBlacklist the sentence blacklist
+	 * @return true, if successful
+	 */
 	private boolean containsBlacklistWord(String candidate, ArrayList<String> sentenceBlacklist) {
 		for(String word : sentenceBlacklist){
 			if(candidate.contains(word)){
@@ -186,6 +205,15 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 		return false;
 	}
 
+	/**
+	 * Checks if the category of a
+	 * Token is a Noun.
+	 * dsp == domain specific
+	 *
+	 * @param category the category
+	 * @param dsp the dsp
+	 * @return true, if is noun
+	 */
 	public boolean isNoun(String category, boolean dsp) {
 		if(dsp){
 			return (category.equals("NNP") || category.equals("NNPS"));
@@ -193,6 +221,12 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 		return (category.equals("NNP") || category.equals("NNPS") || category.equals("NN") || category.equals("NNS"));
 	}
 	
+	/**
+	 * Adds found Feature Occurrences to the FeatureContainer.
+	 *
+	 * @param doc the doc
+	 * @param featureContainer the feature container
+	 */
 	private void addFeatureOccurrences(Document doc , FeatureContainer featureContainer){
 		AnnotationSet contents = doc.getAnnotations("Original markups").get("content");
 		AnnotationSet tokens = doc.getAnnotations().get("Token");
@@ -249,6 +283,15 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 	}
 	
 
+	/**
+	 * Matches a Feature to the annotated Contents of a Document.
+	 *
+	 * @param doc the doc
+	 * @param feature the feature
+	 * @param sortedTokens the sorted tokens
+	 * @param index the index
+	 * @return the int
+	 */
 	private int checkForOccurrence(Document doc, Feature feature, ArrayList<Annotation> sortedTokens, int index) {
 		String featureStem = feature.getFeatureStem();
 		String[] splitStem = featureStem.split(" ");
@@ -288,30 +331,52 @@ public class DocumentProcessorPR extends AbstractProcessingResource implements L
 		return 0;
 	}
 
+	/* (non-Javadoc)
+	 * @see gate.LanguageAnalyser#getCorpus()
+	 */
 	@Override
 	public Corpus getCorpus() {
 		return this.corpus;
 	}
 
+	/* (non-Javadoc)
+	 * @see gate.LanguageAnalyser#getDocument()
+	 */
 	@Override
 	public Document getDocument() {
 		return this.document;
 	}
 
+	/* (non-Javadoc)
+	 * @see gate.LanguageAnalyser#setCorpus(gate.Corpus)
+	 */
 	@Override
 	public void setCorpus(Corpus corpus) {
 		this.corpus = corpus;
 	}
 
+	/* (non-Javadoc)
+	 * @see gate.LanguageAnalyser#setDocument(gate.Document)
+	 */
 	@Override
 	public void setDocument(Document doc) {
 		this.document = doc;
 	}
 
+	/**
+	 * Gets the feature container.
+	 *
+	 * @return the feature container
+	 */
 	public FeatureContainer getFeatureContainer() {
 		return featureContainer;
 	}
 
+	/**
+	 * Sets the feature container.
+	 *
+	 * @param featureContainer2 the new feature container
+	 */
 	public void setFeatureContainer(FeatureContainer featureContainer2) {
 		featureContainer = featureContainer2;
 	}

@@ -2,6 +2,12 @@
 /
 libs/
 .*
+
 /target/
 /serialDataStores/
 /luceneDataStores/
+
+/blacklists/
+*.log
+/xml/
+.classpath
