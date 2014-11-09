@@ -4,10 +4,11 @@ libs/
 .*
 
 /target/
-/serialDataStores/
-/luceneDataStores/
+/featureMining/serialDataStores/
+/featureMining/luceneDataStores/
 
-/blacklists/
+/featureMining/blacklists/
 *.log
-/xml/
+/featureMining/xml/
 .classpath
+*.xml

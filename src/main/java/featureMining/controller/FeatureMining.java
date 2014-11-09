@@ -69,30 +69,6 @@ public class FeatureMining {//Singleton
 	public RootFeatureWindow getRootWindow() {
 		return rootWindow;
 	}
-	
-	/**
-	 * The main method.
-	 *
-	 * @param command line args
-	 */
-	public static void main(String[] args) {
-		
-		try {
-			Gate.setGateHome(new File(args[0]));
-			Gate.init(); //init Gate Embedded
-			//register Creole Directories
-			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome().getPath() + "/ANNIE").toURI().toURL());
-			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome().getPath() + "/Stemmer_Snowball").toURI().toURL());
-			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURI().toURL());
-		} catch (GateException e1) {
-			e1.printStackTrace();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		
-		FeatureMining mainApp = getSingleton();
-		mainApp.start(args);
-	}
 
 	/**
 	 * Getter for the documentProcessor.
@@ -166,4 +142,34 @@ public class FeatureMining {//Singleton
 		    }
 		});
 	}
+	
+	/**
+	 * The main method.
+	 *
+	 * @param command line args
+	 */
+	public static void main(String[] args) {
+		
+		try {
+			if(args.length < 1){
+				System.out.println("Install directory of Gate is required as first Parameter");
+				System.out.println("Shutting down...");
+				System.exit(0);
+			}
+			Gate.setGateHome(new File(args[0]));
+			Gate.init(); //init Gate Embedded
+			//register Creole Directories
+			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome().getPath() + "/ANNIE").toURI().toURL());
+			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome().getPath() + "/Stemmer_Snowball").toURI().toURL());
+			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir") + "/DocumentProcessorPR").toURI().toURL());
+		} catch (GateException e1) {
+			e1.printStackTrace();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		FeatureMining mainApp = getSingleton();
+		mainApp.start(args);
+	}
+	
 }

@@ -10,17 +10,13 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 /**
  * The Class FeatureContainer.
  * A Container for every Feature mined.
  */
 public class FeatureContainer implements Serializable{
-	
-	/** the logger */
-	private static Logger logger = LoggerFactory.getLogger(FeatureContainer.class);
 	
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = -4133816966091176361L;
@@ -280,12 +276,10 @@ public class FeatureContainer implements Serializable{
 	 */
 	public static String packContainer(FeatureContainer featureContainer){
 		try {
-			logger.info("Packing FeatureContainer Bytestream to String...");
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(bos);
 			os.writeObject(featureContainer);
 			os.close();
-			logger.info("done");
 			return bos.toString();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -302,12 +296,10 @@ public class FeatureContainer implements Serializable{
 	public static FeatureContainer restoreContainer(String byteString){
 		
 		try {
-			logger.info("\nRestoring FeatureContainer from byteStreamString...");
 			ByteArrayInputStream bis = new ByteArrayInputStream(byteString.getBytes());
 			ObjectInputStream inputStream = new ObjectInputStream(bis);
 			FeatureContainer restoredContainer = (FeatureContainer) inputStream.readObject();
 			inputStream.close();
-			logger.info("done\n");
 			return restoredContainer;
 		} catch (Exception e) {
 			e.printStackTrace();

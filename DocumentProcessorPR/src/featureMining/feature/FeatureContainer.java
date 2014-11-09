@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
 /**
  * The Class FeatureContainer.
  * A Container for every Feature mined.

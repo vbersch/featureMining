@@ -28,7 +28,7 @@ public class SettingsManager {
 	private static Logger logger = LoggerFactory.getLogger(FeatureMining.class);
 	
 	/** The File Path, where the Settings are saved in. */
-	private static final String fileName = System.getProperty("user.dir")+ "/settings.xml";
+	private static final String fileName = System.getProperty("user.dir")+ "/featureMining/settings.xml";
 	
 	/** The options of the OptionWindow. */
 	private static OptionTransferObject options;
@@ -48,7 +48,7 @@ public class SettingsManager {
 	            options = (OptionTransferObject) un.unmarshal(settingsFile);
 	            return options;
 	        } catch (JAXBException e) {
-	            logger.warn("Couldn´t load settings...\n Using default settings...");
+	            logger.warn("Couldnï¿½t load settings...\n Using default settings...");
 	            return null;
 	        }
 		}
@@ -71,7 +71,7 @@ public class SettingsManager {
             marshaller.marshal(options, settingsFile);
         } catch (JAXBException e) {
             e.printStackTrace();
-            logger.warn("Couldn´t save Settings...");
+            logger.warn("Couldnï¿½t save Settings...");
         }
 	}
 	

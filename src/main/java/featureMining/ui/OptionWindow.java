@@ -305,7 +305,7 @@ public class OptionWindow extends JFrame {
 		htmlLabel = new JLabel("Documentation Format: ");
 		htmlLabel.setMaximumSize(new Dimension(htmlLabel.getPreferredSize()));
 		
-		hostLabel = new JLabel("hostName: ");
+		hostLabel = new JLabel("Url´s must contain: ");
 		hostLabel.setMaximumSize(new Dimension(hostLabel.getPreferredSize()));
 		
 		JLabel preprocessingLabel = new JLabel("Preprocessor: ");

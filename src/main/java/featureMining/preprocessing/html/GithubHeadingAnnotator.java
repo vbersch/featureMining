@@ -105,7 +105,6 @@ public class GithubHeadingAnnotator extends HtmlHeadingAnnotator{
 				long end = annot.getEndNode().getOffset();
 				if(!gate.Utils.stringFor(doc, start , end).contains("Navigation")){
 					FeatureMap map = Factory.newFeatureMap();
-					//TODO fix heading hierarchy
 					if(annot.getType().equals("h1")){
 						map.put("hierarchy", "topLevel");
 					}else if(annot.getType().equals("h2")){

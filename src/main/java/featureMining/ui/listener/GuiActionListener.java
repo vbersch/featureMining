@@ -66,7 +66,7 @@ public class GuiActionListener implements ActionListener{
 			}
 		}else if(button.getName().equals("fireButton")){
 			rootWindow.showOptionsPane();
-		}else if(button.getName().equals("changeButton")){ //change a Feature´s label
+		}else if(button.getName().equals("changeButton")){ //change a Featureï¿½s label
 			if(list.getSelectedIndex() != -1){
 				String oldName = (String) list.getSelectedValue();
 				String newName = rootWindow.getNewNameField().getText();
@@ -87,7 +87,7 @@ public class GuiActionListener implements ActionListener{
 					rootWindow.updateEditBoxContent(newName);
 				}
 			}
-		}else if(button.getName().equals("cancelOptions")){ //The OptionWindow´s Cancel Button
+		}else if(button.getName().equals("cancelOptions")){ //The OptionWindowï¿½s Cancel Button
 			rootWindow.getOptionFrame().dispose();
 		}else if(button.getName().equals("featureMining")){//Start the Feature Mining Process
 			//save Settings
@@ -182,7 +182,7 @@ public class GuiActionListener implements ActionListener{
 	 */
 	private String showFileDialog(String directory, String mode) {
 		final JFileChooser fc = new JFileChooser();
-		fc.setCurrentDirectory(new File(System.getProperty("user.dir") + "/" + directory));
+		fc.setCurrentDirectory(new File(System.getProperty("user.dir") + "/featureMining/" + directory));
 		fc.setApproveButtonText("Choose"); 
 		if(directory.equals("luceneDataStores") || directory.equals("serialDataStores")){
 			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
