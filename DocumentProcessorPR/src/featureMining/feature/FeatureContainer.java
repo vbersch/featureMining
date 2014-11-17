@@ -156,9 +156,9 @@ public class FeatureContainer implements Serializable{
 			identifier = feature.getLabel();
 		}else{
 			identifier = feature.getFeatureStem();
-			this.featureDictionary.put(feature.getLabel() , feature);
-			this.featureDictionary.put(identifier , feature);
+			this.featureDictionary.put(feature.getLabel() , feature);	
 		}
+		this.featureDictionary.put(identifier , feature);
 		this.featureStorage.put(identifier, feature);
 		feature.addFeatureOccurrence(occurrence);
 	}
@@ -171,6 +171,10 @@ public class FeatureContainer implements Serializable{
 	}
 	
 	
+	public HashMap<String, Feature> getFeatureDictionary() {
+		return featureDictionary;
+	}
+
 	/**
 	 * Adds a Feature. Features can only be added when found in a heading Annotation.
 	 *

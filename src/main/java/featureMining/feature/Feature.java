@@ -51,6 +51,7 @@ public class Feature implements Comparable<Feature>, Serializable{
 	 */
 	public Feature() {
 		oldLabel = null;
+		singleWords = new ArrayList<String>();
 		featureOccurrences = new ArrayList<FeatureOccurrence>();
 		distinctDescription = new ArrayList<String>();
 		occurrence = 0;

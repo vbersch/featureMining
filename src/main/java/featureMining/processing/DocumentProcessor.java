@@ -41,7 +41,7 @@ public class DocumentProcessor implements ISimpleProcessor{
 		featureContainer.setLinkNum(corpus.getDocumentNames().size());
 		featureContainer.setOptions(SettingsManager.getOptions());
 		
-		String[] processingResources = {
+		String[] processingResources = { 
 				"gate.creole.tokeniser.DefaultTokeniser", //Adds Tokens to every Document
 				"gate.creole.splitter.SentenceSplitter", //Splits the Document into Sentence Annotations
 				"gate.creole.POSTagger", //Adds Part-of-Speech Features to the Tokens Feature Maps

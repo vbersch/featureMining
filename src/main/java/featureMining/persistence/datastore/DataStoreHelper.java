@@ -22,7 +22,7 @@ import org.apache.commons.io.FileUtils;
 
 /**
  * A static Helper class needed for Saving to Gate Datastore.
- */
+ */ 
 public final class DataStoreHelper {
 
 	
@@ -42,7 +42,7 @@ public final class DataStoreHelper {
 		}else{
 			try{
 				if(!folder.mkdirs()){
-					throw new Exception("Couldn´t create Folder...");
+					throw new Exception("Couldnï¿½t create Folder...");
 				}
 			}catch(Exception e){
 				e.printStackTrace();

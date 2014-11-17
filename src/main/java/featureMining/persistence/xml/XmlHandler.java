@@ -29,6 +29,7 @@ import featureMining.feature.FeatureOccurrence;
 import featureMining.persistence.IPersistenceHandler;
 import featureMining.ui.RootFeatureWindow;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class XmlHandler.
  * This Implementation of the IPersistenceHandler provides
@@ -36,7 +37,7 @@ import featureMining.ui.RootFeatureWindow;
  */
 public class XmlHandler implements IPersistenceHandler{
 	
-	/** the logger */
+	/**  the logger. */
 	private static Logger logger = LoggerFactory.getLogger(XmlHandler.class);
 	
 	/** The instance. */
@@ -48,7 +49,7 @@ public class XmlHandler implements IPersistenceHandler{
 	/** The doc. */
 	private Document doc;
 	
-	/** Was stemming enabled during creation of xml File?*/
+	/**  Was stemming enabled during creation of xml File?. */
 	private boolean isStemmingEnabled;
 	
 	/**
@@ -340,5 +341,21 @@ public class XmlHandler implements IPersistenceHandler{
 		return instance;
 	}
 	
+	/**
+	 * Gets the root window.
+	 *
+	 * @return the root window
+	 */
+	public RootFeatureWindow getRootWindow() {
+		return rootWindow;
+	}
 
+	/**
+	 * Sets the root window.
+	 *
+	 * @param rootWindow the new root window
+	 */
+	public void setRootWindow(RootFeatureWindow rootWindow) {
+		this.rootWindow = rootWindow;
+	}
 }

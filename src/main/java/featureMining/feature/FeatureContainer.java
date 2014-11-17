@@ -2,11 +2,7 @@ package featureMining.feature;
 
 import gate.Annotation;
 import gate.Document;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -156,9 +152,9 @@ public class FeatureContainer implements Serializable{
 			identifier = feature.getLabel();
 		}else{
 			identifier = feature.getFeatureStem();
-			this.featureDictionary.put(feature.getLabel() , feature);
-			this.featureDictionary.put(identifier , feature);
+			this.featureDictionary.put(feature.getLabel() , feature);	
 		}
+		this.featureDictionary.put(identifier , feature);
 		this.featureStorage.put(identifier, feature);
 		feature.addFeatureOccurrence(occurrence);
 	}
@@ -171,6 +167,10 @@ public class FeatureContainer implements Serializable{
 	}
 	
 	
+	public HashMap<String, Feature> getFeatureDictionary() {
+		return featureDictionary;
+	}
+
 	/**
 	 * Adds a Feature. Features can only be added when found in a heading Annotation.
 	 *
@@ -266,44 +266,45 @@ public class FeatureContainer implements Serializable{
 		this.featureDictionary.get(feature).addFeatureOccurrence(featureOccurrence);
 		
 	}
-	
-	/**
-	 * Serializes the Bytestream of the FeatureContainer into a String.
-	 * Can be used to store a FeatureContainer as String in the FeatureMap of a Corpus
-	 *
-	 * @param featureContainer the feature container
-	 * @return the string
-	 */
-	public static String packContainer(FeatureContainer featureContainer){
-		try {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutputStream os = new ObjectOutputStream(bos);
-			os.writeObject(featureContainer);
-			os.close();
-			return bos.toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	/**
-	 * Restores a FeatureContainer out of a serialized Bytestream string.
-	 *
-	 * @param byteString the byte string
-	 * @return the feature container
-	 */
-	public static FeatureContainer restoreContainer(String byteString){
-		
-		try {
-			ByteArrayInputStream bis = new ByteArrayInputStream(byteString.getBytes());
-			ObjectInputStream inputStream = new ObjectInputStream(bis);
-			FeatureContainer restoredContainer = (FeatureContainer) inputStream.readObject();
-			inputStream.close();
-			return restoredContainer;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+
+	//could be useful someday but has to be reworked...
+//	/**
+//	 * Serializes the Bytestream of the FeatureContainer into a String.
+//	 * Can be used to store a FeatureContainer as String in the FeatureMap of a Corpus
+//	 *
+//	 * @param featureContainer the feature container
+//	 * @return the string
+//	 */
+//	public static String packContainer(FeatureContainer featureContainer){
+//		try {
+//			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//			ObjectOutputStream os = new ObjectOutputStream(bos);
+//			os.writeObject(featureContainer);
+//			os.close();
+//			return bos.toString();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		return null;
+//	}
+//	
+//	/**
+//	 * Restores a FeatureContainer out of a serialized Bytestream string.
+//	 *
+//	 * @param byteString the byte string
+//	 * @return the feature container
+//	 */
+//	public static FeatureContainer restoreContainer(String byteString){
+//		
+//		try {
+//			ByteArrayInputStream bis = new ByteArrayInputStream(byteString.getBytes());
+//			ObjectInputStream inputStream = new ObjectInputStream(bis);
+//			FeatureContainer restoredContainer = (FeatureContainer) inputStream.readObject();
+//			inputStream.close();
+//			return restoredContainer;
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		return null;
+//	}
 }
